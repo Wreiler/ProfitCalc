@@ -1,0 +1,643 @@
+import ctypes
+from tkinter import *
+from tkinter.ttk import Checkbutton
+from tkinter.filedialog import *
+from tkinter.messagebox import *
+from functools import partial
+import json
+import datetime
+
+# Для вывода иконки в панель задач
+myappid = 'mycompany.myproduct.subproduct.version'
+ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+
+# Вывод основного окна программы
+window = Tk()
+window.title("ProfitCalc")  # Название окна
+window.iconphoto(False, PhotoImage(file='img2.png'))  # Иконка на рамке окна
+w, h = window.winfo_screenwidth(), window.winfo_screenheight()
+xax, yax = (int(w*0.7), int(h*0.8)) if w <= 1366 and h <= 768 else (int(w*0.5), int(h*0.6))
+window.geometry(f'{xax}x{yax}')
+window.resizable(0, 0)
+
+# Константы, необходимые для работы программы
+frame_d1, frame_d2 = 0, 0  # - блоки набора коробок за день
+d_ac1, d_ac2 = [], []  # - контейнеры для количества коробок за день
+std, stn = 140.13, 28.026  # - ставки в день и ночь
+hours = 11.3  # - часы работы
+file_name = ''  # - default для имени файла
+alt1, alt2 = 0, 0  # - окна для ввода процентов n-% премии
+prem_n1, prem_n2 = 0, 0  # - величины n-% премии
+
+
+# ФУНКЦИИ МЕНЮ ПРОГРАММЫ
+def about():
+    """
+    Функция для вывода справки из меню программы
+    """
+
+    showinfo("Справка", "Программа для расчета оклада труда.\nВерсия 1.0\n\nby Wreiler")
+
+
+def open_file():
+    """
+    Функция для открытия файла из меню программы
+    """
+
+    global file_name, ac1_list, ac2_list, inp_ver
+    file = askopenfile()
+    if file:
+        with open(file.name, 'r') as filej:
+            ac1_list, ac2_list, inp_ver = json.load(filej)
+        back()
+        file_name = file.name
+
+
+def save_as_file():
+    """
+    Функция для сохранения файла в новый из меню программы
+    """
+
+    global file_name
+    now = datetime.datetime.now()
+    file = asksaveasfile(defaultextension=".json", initialfile=f'Расчет от {now.strftime("%d-%m-%Y")}')
+    if file:
+        with open(file.name, 'w') as filej:
+            data_package()
+            pack = [ac1_list, ac2_list, inp_ver]
+            json.dump(pack, filej)
+        file_name = file.name
+
+
+def save_file():
+    """
+    Функция для сохранения текущего файла из меню программы
+    """
+
+    file = file_name
+    if file not in [None, '']:
+        with open(file, "w") as filej:
+            data_package()
+            pack = [ac1_list, ac2_list, inp_ver]
+            json.dump(pack, filej)
+
+
+def do_popup(event):
+    """
+    Функция для отображения меню программы
+    """
+
+    popup = Menu(window, tearoff=0)
+    popup.add_command(label="Save", command=save_file)
+    popup.add_command(label="About", command=about)
+    popup.add_command(label="Exit", command=_exit)
+    popup.tk_popup(event.x_root, event.y_root, 0)
+    popup.grab_release()
+
+
+def _exit():
+    """
+    Функция для выхода из программы с помощью кнопки из меню
+    """
+
+    if askyesno("Выход", "Хотите сохранить файл перед выходом?"):
+        save_as_file()
+    window.destroy()
+
+
+def new_file():
+    """
+    Функция для создания нового фала из меню программы (очистка полей)
+    """
+
+    global file_name
+    if askyesno("Новый файл", "Хотите сохранить файл перед созданием нового?"):
+        save_as_file()
+    for x in window.winfo_children():
+        x.destroy()
+    win_one()
+    file_name = ''
+
+
+def make_menu(n):
+    """
+    Функция для создания и исполнения функционала меню программы
+    """
+
+    m = Menu(window)  # создается объект Меню на главном окне
+    window.config(menu=m)  # окно конфигурируется с указанием меню для него
+
+    fm = Menu(m, tearoff=0)  # создается пункт меню с размещением на основном меню (m)
+    m.add_cascade(label="Файл", menu=fm)  # пункт располагается на основном меню (m)
+    if n == 1:
+        fm.add_command(label="Новый расчет", command=new_file)
+        fm.add_command(label="Открыть...", command=open_file)
+        fm.add_command(label="Сохранить", command=save_file)
+        fm.add_command(label="Сохранить как...", command=save_as_file)
+    else:
+        fm.add_command(label="Сохранить результаты", command=save_file)
+        fm.add_command(label="Сохранить результаты как...", command=save_as_file)
+    fm.add_separator()
+    fm.add_command(label="Выход", command=_exit)
+
+    hm = Menu(m, tearoff=0)  # второй пункт меню
+    m.add_cascade(label="Помощь", menu=hm)
+    hm.add_command(label="Справка", command=about)
+
+
+# ФУНКЦИИ ОТОБРАЖЕНИЯ ОСНОВНЫХ ОКОН И ПОЛЕЙ ПРОГРАММЫ
+def win_one():
+    """
+    Функция для отображения полей и элементов первого окна программы (окна ввода)
+    """
+
+    make_menu(1)
+
+    # дни и ночи для AC1
+    global dlab_ac1, dtext_ac1, nlab_ac1, ntext_ac1, but_ac1, ogib1
+    dlab_ac1 = Label(window, text='Количество дней (АС1):', font=("Times", int(yax * 0.0205)))
+    dlab_ac1.place(relx=0.4, rely=0.05, anchor=CENTER)
+    dtext_ac1 = Text(window, width=3, height=1)
+    dtext_ac1.place(relx=0.515, rely=0.05, anchor=CENTER)
+    dtext_ac1.configure(font=f'garamond {round(yax * 0.0175)}')
+    dtext_ac1.bind('<Key>', partial(check_keys, field=dtext_ac1))
+
+    nlab_ac1 = Label(window, text='и ночей (АС1):', font=("Times", int(yax * 0.0205)))
+    nlab_ac1.place(relx=0.6, rely=0.05, anchor=CENTER)
+    ntext_ac1 = Text(window, width=3, height=1)
+    ntext_ac1.place(relx=0.682, rely=0.05, anchor=CENTER)
+    ntext_ac1.configure(font=f'garamond {round(yax * 0.0175)}')
+    ntext_ac1.bind('<Key>', partial(check_keys, field=ntext_ac1))
+
+    # кнопка для принятия количества дней
+    ogib1 = Canvas(width=65, height=30)
+    ogib1.place(relx=0.5, rely=0.105, anchor=CENTER)
+    but_ac1 = Button(ogib1, text="Принять", font=("Times", round(yax * 0.014)), bg='#D8D8D8',
+                     width=7, height=1, relief='groove', command=ac1_print)
+    but_ac1.place(relx=0.5, rely=0.5, anchor=CENTER)
+
+    # дни и ночи для AC2
+    global dlab_ac2, dtext_ac2, nlab_ac2, ntext_ac2, but_ac2, ogib2
+    dlab_ac2 = Label(window, text='Количество дней (АС2):', font=("Times", int(yax * 0.0205)))
+    dlab_ac2.place(relx=0.4, rely=0.44, anchor=CENTER)
+    dtext_ac2 = Text(window, width=3, height=1)
+    dtext_ac2.place(relx=0.515, rely=0.44, anchor=CENTER)
+    dtext_ac2.configure(font=f'garamond {round(yax * 0.0175)}')
+    dtext_ac2.bind('<Key>', partial(check_keys, field=dtext_ac2))
+
+    nlab_ac2 = Label(window, text='и ночей (АС2):', font=("Times", int(yax * 0.0205)))
+    nlab_ac2.place(relx=0.6, rely=0.44, anchor=CENTER)
+    ntext_ac2 = Text(window, width=3, height=1)
+    ntext_ac2.place(relx=0.682, rely=0.44, anchor=CENTER)
+    ntext_ac2.configure(font=f'garamond {round(yax * 0.0175)}')
+    ntext_ac2.bind('<Key>', partial(check_keys, field=ntext_ac2))
+
+    # кнопка для принятия количества дней
+    ogib2 = Canvas(width=65, height=30)
+    ogib2.place(relx=0.4995, rely=0.495, anchor=CENTER)
+    but_ac2 = Button(ogib2, text="Принять", font=("Times", round(yax * 0.014)), bg='#D8D8D8',
+                     width=7, height=1, relief='groove', command=ac2_print)
+    but_ac2.place(relx=0.5, rely=0.5, anchor=CENTER)
+
+    # аванс
+    global lab_ava, text_ava
+    lab_ava = Label(window, text='Аванс:', font=("Times", int(yax * 0.0205)))
+    lab_ava.place(relx=0.23, rely=0.84, anchor=CENTER)
+
+    text_ava = Text(window, width=8, height=1)
+    text_ava.place(relx=0.3, rely=0.84, anchor=CENTER)
+    text_ava.configure(font=f'garamond {round(yax * 0.0175)}')
+    text_ava.bind('<Key>', partial(check_keys, field=text_ava))
+
+    # ставка в час для дня
+    global st_day_lab, st_day_t, stav_d
+    st_day_lab = Label(window, text='Ставка в час (день):', font=("Times", int(yax * 0.0205)))
+    st_day_lab.place(relx=0.41, rely=0.84, anchor=CENTER)
+
+    # поле для ставки для дня и управление им
+    st_day_t = Text(window, width=8, height=1)
+    st_day_t.place(relx=0.52, rely=0.84, anchor=CENTER)
+    st_day_t.configure(font=f'garamond {round(yax * 0.0175)}', bg='#f2f2f2')
+    st_day_t.bind('<Key>', partial(check_keys, field=st_day_t))
+    st_day_t.insert(0.0, std)
+    st_day_t.configure(state=DISABLED)
+
+    stav_d = BooleanVar()
+    ch_day = Checkbutton(text='', variable=stav_d, command=partial(ch_but, 0), takefocus=0)
+    ch_day.place(relx=0.57, rely=0.84, anchor=CENTER)
+    stav_d.set(True)
+
+    # ставка в час для ночи
+    global st_nig_lab, st_nig_t, stav_n
+    st_nig_lab = Label(window, text='Ставка в час (ночь):', font=("Times", int(yax * 0.0205)))
+    st_nig_lab.place(relx=0.66, rely=0.84, anchor=CENTER)
+
+    # поле для ставки для ночи и управление им
+    st_nig_t = Text(window, width=8, height=1)
+    st_nig_t.place(relx=0.77, rely=0.84, anchor=CENTER)
+    st_nig_t.configure(font=f'garamond {round(yax * 0.0175)}', bg='#f2f2f2')
+    st_nig_t.bind('<Key>', partial(check_keys, field=st_nig_t))
+    st_nig_t.insert(0.0, stn)
+    st_nig_t.configure(state=DISABLED)
+
+    stav_n = BooleanVar()
+    ch_nig = Checkbutton(text='', variable=stav_n, command=partial(ch_but, 1), takefocus=0)
+    ch_nig.place(relx=0.82, rely=0.84, anchor=CENTER)
+    stav_n.set(True)
+
+    # кнопка для вычисления и перехода ко второму окну
+    but_culc = Button(window, text="Вычислить", font=("Times", int(yax * 0.0188)), bg='#D8D8D8',
+                      width=10, height=1, relief='groove', command=evaluate)
+    but_culc.place(relx=0.5, rely=0.93, anchor=CENTER)
+
+
+def win_sec():
+    """
+    Функция для отображения полей и элементов второго окна программы (окна результатов)
+    """
+
+    make_menu(2)
+
+    res = Label(window, text='Результаты', font=("Times", int(yax * 0.0305)))
+    res.place(relx=0.5, rely=0.04, anchor=CENTER)
+    but_back = Button(window, text="Назад", font=("Times", int(yax * 0.0178)), bg='#D8D8D8',
+                      width=10, height=1, relief='groove', command=back)
+    but_back.place(relx=0.5, rely=0.92, anchor=CENTER)
+
+
+def ac1_print():
+    """
+    Функция для вывода блока полей для ввода коробок на AC1
+    """
+
+    global frame_d1, d_ac1
+
+    # проверка на ввод количества дней на AC1
+    d_ac1 = []
+    if frame_d1 != 0:
+        frame_d1.destroy()
+    days = incorrect_input(dtext_ac1)
+    if days is None:
+        frame_d1 = 0
+        return
+    ogib1.configure(highlightthickness=0)
+
+    frame_d1 = Canvas(width=xax - 10, height=yax * 0.068 * (days // 10 if days % 10 == 0 else (days // 10) + 1),
+                      highlightthickness=0, selectborderwidth=3)
+    frame_d1.place(relx=0.5, rely=0.135, anchor='n')
+    rs, cs = 1, 1
+    for i in range(days):
+        if i in [10, 20, 30]:
+            rs += 1
+            cs -= 10
+        f = Canvas(frame_d1, width=xax * 0.0846, height=yax * 0.0788,
+                   highlightthickness=0.5, highlightbackground="black", bg='#dedede')
+        f.grid(row=rs, column=cs + i, sticky='e', padx=2, pady=2)
+        f.create_text(xax * 0.0846 * 0.5, yax * 0.0788 * 0.165, text=f'{i + 1}',
+                      font=("Times", int(yax * 0.0175), 'italic'))
+        for k in range(3):
+            text1 = Text(f, width=3, height=1)
+            text1.place(relx=0.25 * (k + 1), rely=0.46, anchor=CENTER)
+            text1.configure(font=f'garamond {round(yax * 0.014)}')
+            text1.bind('<Key>', partial(check_keys, field=text1))
+            text2 = Text(f, width=3, height=1)
+            text2.place(relx=0.25 * (k + 1), rely=0.8, anchor=CENTER)
+            text2.configure(font=f'garamond {round(yax * 0.014)}')
+            text2.bind('<Key>', partial(check_keys, field=text2))
+            d_ac1.append((text1, text2))
+
+
+def ac2_print():
+    """
+    Функция для вывода блока полей для ввода коробок на AC2
+    """
+
+    global frame_d2, d_ac2, days
+
+    # проверка на ввод количества дней на AC2
+    d_ac2 = []
+    if frame_d2 != 0:
+        frame_d2.destroy()
+    days = incorrect_input(dtext_ac2)
+    if days is None:
+        frame_d2 = 0
+        return
+    ogib2.configure(highlightthickness=0)
+    frame_d2 = Canvas(width=xax - 10, height=yax * 0.068 * (days // 10 if days % 10 == 0 else (days // 10) + 1),
+                      highlightthickness=0)
+    frame_d2.place(relx=0.5, rely=0.525, anchor='n')
+    rs, cs = 1, 1
+    for i in range(days):
+        if i in [10, 20, 30]:
+            rs += 1
+            cs -= 10
+        f = Canvas(frame_d2, width=xax * 0.0846, height=yax * 0.0788,
+                   highlightthickness=0.5, highlightbackground="black", bg='#dedede')
+        f.grid(row=rs, column=cs + i, sticky='e', padx=2, pady=2)
+        f.create_text(xax * 0.0846 * 0.5, yax * 0.0788 * 0.165, text=f'{i + 1}',
+                      font=("Times", int(yax * 0.0175), 'italic'))
+        for k in range(3):
+            text1 = Text(f, width=3, height=1)
+            text1.place(relx=0.25 * (k + 1), rely=0.46, anchor=CENTER)
+            text1.configure(font=f'garamond {round(yax * 0.014)}')
+            text1.bind('<Key>', partial(check_keys, field=text1))
+            text2 = Text(f, width=3, height=1)
+            text2.place(relx=0.25 * (k + 1), rely=0.8, anchor=CENTER)
+            text2.configure(font=f'garamond {round(yax * 0.014)}')
+            text2.bind('<Key>', partial(check_keys, field=text2))
+            d_ac2.append((text1, text2))
+
+
+def back():
+    """
+    Функция для возвращения к первому окну программы и вставки введенных значений обратно в поля
+    """
+
+    # очистка экрана и отображение первого окна
+    for x in window.winfo_children():
+        x.destroy()
+    win_one()
+
+    # обработка значений из "памяти ввода"
+    txts, sts = ('dtext_ac1', 'ntext_ac1', 'dtext_ac2', 'ntext_ac2', 'text_ava'), ('st_day_t', 'st_nig_t')
+    [eval(f'{txts[x]}.insert(0.0, inp_ver[x])') for x in range(len(txts))]
+
+    [eval(f'{sts[x]}.configure(state=NORMAL)') for x in range(len(sts))]
+    [eval(f'{sts[x]}.delete(0.0, END)') for x in range(len(sts))]
+    [eval(f'{sts[x]}.insert(0.0, inp_ver[x+5])') for x in range(len(sts))]
+    [eval(f'{sts[x]}.configure(state=DISABLED)') for x in range(len(sts))]
+
+    # вставка значений в поля на свои места
+    if ac1_list != [[[]]]:
+        ac1_print()
+        temp1 = [[k for k in x] for i in ac1_list for x in i]
+        [[(x[0].insert(0.0, temp1[d_ac1.index(x)][0]), x[1].insert(0.0, temp1[d_ac1.index(x)][1]))
+          for x in d_ac1[i:i + 3]] for i in range(0, len(d_ac1), 3)]
+    if ac2_list != [[[]]]:
+        ac2_print()
+        temp2 = [[k for k in x] for i in ac2_list for x in i]
+        [[(x[0].insert(0.0, temp2[d_ac2.index(x)][0]), x[1].insert(0.0, temp2[d_ac2.index(x)][1]))
+          for x in d_ac2[i:i + 3]] for i in range(0, len(d_ac2), 3)]
+
+
+# ФУНКЦИИ ВЫЧИСЛЕНИЙ И ОБРАБОТКИ РЕЗУЛЬТАТОВ ПРОГРАММЫ
+def data_package():
+    """
+    Функция для "запаковывания" введенных данных для удобства работы
+    """
+
+    global ac1_list, ac2_list, inp_ver
+    if push_check(d_ac1, ogib1):
+        ac1_list = [[(x[0].get(0.0, END).strip(), x[1].get(0.0, END).strip()) for x in d_ac1[i:i + 3]]
+                    for i in range(0, len(d_ac1), 3)]
+    else:
+        ac1_list = [[[]]]
+    if push_check(d_ac2, ogib2):
+        ac2_list = [[(x[0].get(0.0, END).strip(), x[1].get(0.0, END).strip()) for x in d_ac2[i:i + 3]]
+                    for i in range(0, len(d_ac2), 3)]
+    else:
+        ac2_list = [[[]]]
+    elements = (dtext_ac1, ntext_ac1, dtext_ac2, ntext_ac2, text_ava, st_day_t, st_nig_t)
+    inp_ver = [incorrect_input(x, 'fl') if x in (st_day_t, st_nig_t) else incorrect_input(x) for x in elements]
+
+
+def evaluate():
+    """
+    Функция для управления вычислениями и их отображением
+    """
+
+    global inp_ver, ac1_list, ac2_list
+
+    # запаковка данных и их проверка
+    data_package()
+    check = (proof_days(ac1_list, frame_d1), proof_days(ac2_list, frame_d2))
+    print(f'Результаты: {inp_ver}')
+    if None in inp_ver or 0 in check:
+        return
+
+    # очистка и переход к вычислениям иотображению их результатов
+    for x in window.winfo_children():
+        x.destroy()
+    calculation(ac1_list, ac2_list, inp_ver)
+    win_sec()
+
+
+def calculation(days_ac1, days_ac2, fields):
+    """
+    Функция для вычислений и расчетов требуемых значений
+    """
+
+    global res_ac1, res_ac2, canx, cany, ocl1, ocl2, premia1, premia2, premia201, premia202
+    print(days_ac1, days_ac2, sep='\n')
+    print(fields)
+
+    # расчет процентов по каробка в день
+    p_temp1 = [[round(int(x[1] if x[1] != '' else 0) / int(x[0]) * 100)
+                if (x[0] != '' or x[1] != '') else '' for x in i] for i in days_ac1]
+    pers_dac1 = [sum([x for x in i if x != '']) // len([x for x in i if x != ''])
+                 if any([x != '' for x in i]) else 0 for i in p_temp1]
+    p_temp2 = [[round(int(x[1] if x[1] != '' else 0) / int(x[0]) * 100)
+                if (x[0] != '' or x[1] != '') else '' for x in i] for i in days_ac2]
+    pers_dac2 = [sum([x for x in i if x != '']) // len([x for x in i if x != ''])
+                 if any([x != '' for x in i]) else 0 for i in p_temp2]
+    print(pers_dac1, pers_dac2)
+
+    # результаты для AC1
+    canx, cany = (xax * 0.5) - 30, yax * 0.5
+    res_ac1 = Canvas(width=canx, height=cany, bg='#e0e0e0', highlightthickness=1, highlightbackground="black")
+    res_ac1.place(relx=0.255, rely=0.33, anchor=CENTER)
+    res_ac1.create_text(canx * 0.5, cany * 0.05, text='AC1', font=("Times", int(yax * 0.0255)), fill='#870909')
+    ocl1 = fields[-2] * hours * fields[0]
+    res_ac1.create_text(canx * 0.5, cany * 0.3, text=f'Оклад:  {round(ocl1, 2)}  руб.',
+                        font=("Times", int(yax * 0.0225)))
+    premia1 = sum([(fields[-2] * hours * x) // 100 for x in pers_dac1])
+    res_ac1.create_text(canx * 0.5, cany * 0.45,
+                        text=f'Премия:  {round(premia1, 2)}  руб.',
+                        font=("Times", int(yax * 0.0225)))
+    premia201 = 0.2 * ocl1
+    res_ac1.create_text(canx * 0.5, cany * 0.6, text=f'Премия  20%:  {round(premia201, 2)}  руб.',
+                        font=("Times", int(yax * 0.0225)))
+    res_ac1.create_text(canx * 0.39, cany * 0.75, text=f'Премия        %:', font=("Times", int(yax * 0.0225)))
+
+    per_text1 = Text(res_ac1, width=2, height=1)
+    per_text1.place(relx=0.434, rely=0.74, anchor=CENTER)
+    per_text1.configure(font=("Times", int(yax * 0.0225)))
+    per_text1.bind('<Key>', partial(check_keys, field=per_text1))
+    per_text1.insert(0.0, 0)
+    but_per1 = Button(res_ac1, text="Пересчитать", font=("Times", 11), bg='#D8D8D8',
+                      width=10, height=1, relief='groove', command=partial(prem_pers, per_text1))
+    but_per1.place(relx=0.5, rely=0.86, anchor=CENTER)
+
+    # результаты для AC2
+    res_ac2 = Canvas(width=(xax // 2) - 30, height=yax // 2, bg='#e0e0e0', highlightthickness=1,
+                     highlightbackground="black")
+    res_ac2.place(relx=0.745, rely=0.33, anchor=CENTER)
+    res_ac2.create_text(canx * 0.5, cany * 0.05, text='AC2', font=("Times", int(yax * 0.0255)), fill='#870909')
+    ocl2 = fields[-2] * hours * fields[2] / 2
+    res_ac2.create_text(canx * 0.5, cany * 0.3, text=f'Оклад:  {round(ocl2, 2)}  руб.',
+                        font=("Times", int(yax * 0.0225)))
+    premia2 = sum([(fields[-2] * hours * x) // 200 for x in pers_dac2])
+    res_ac2.create_text(canx * 0.5, cany * 0.45,
+                        text=f'Премия:  {round(premia2, 2)}  руб.',
+                        font=("Times", int(yax * 0.0225)))
+    premia202 = 0.2 * ocl2
+    res_ac2.create_text(canx * 0.5, cany * 0.6, text=f'Премия  20%:  {round(premia202, 2)}  руб.',
+                        font=("Times", int(yax * 0.0225)))
+    res_ac2.create_text(canx * 0.39, cany * 0.75, text=f'Премия        %:', font=("Times", int(yax * 0.0225)))
+
+    per_text2 = Text(res_ac2, width=2, height=1)
+    per_text2.place(relx=0.434, rely=0.74, anchor=CENTER)
+    per_text2.configure(font=("Times", int(yax * 0.0225)))
+    per_text2.bind('<Key>', partial(check_keys, field=per_text2))
+    per_text2.insert(0.0, 0)
+    but_per2 = Button(res_ac2, text="Пересчитать", font=("Times", 11), bg='#D8D8D8',
+                      width=10, height=1, relief='groove', command=partial(prem_pers, per_text2))
+    but_per2.place(relx=0.5, rely=0.86, anchor=CENTER)
+
+    # линии для разделения
+    line_ver = Canvas(width=xax // 100, height=yax // 2)
+    line_ver.place(relx=0.5, rely=0.33, anchor=CENTER)
+    line_ver.create_line(xax // 150, 0, xax // 150, yax // 2, fill='#a34e4e', width=3)
+    line_hor = Canvas(width=xax - 45, height=yax // 170)
+    line_hor.place(relx=0.5, rely=0.59, anchor=CENTER)
+    line_hor.create_line(0, yax // 255, xax, yax // 255, fill='#a34e4e', width=3)
+
+    # итоговые результаты
+    global totx, toty, res_tot
+    totx, toty = xax // 1.5, yax // 3.5
+    res_tot = Canvas(width=totx, height=toty, bg='#e0e0e0', highlightthickness=1, highlightbackground="black")
+    res_tot.place(relx=0.5, rely=0.74, anchor=CENTER)
+
+    prem_pers(per_text1)
+    prem_pers(per_text2)
+
+
+def prem_pers(tf):
+    """
+    Функция для расчета n-% премии и перерасчета итоговыъ результатов
+    """
+
+    global ocl1, ocl2, alt1, alt2, prem_n1, prem_n2, res_tot
+    pers = int(tf.get(0.0, END).strip())
+    parent = tf.master
+
+    # расчет n-% премии для AC1
+    if parent == res_ac1:
+        prem_n1 = (pers / 100) * ocl1
+        if alt1 != 0:
+            parent.delete(alt1)
+            alt1 = parent.create_text(canx * 0.62, cany * 0.75, text=f'  {round(prem_n1, 2)}  руб.',
+                                      font=("Times", int(yax * 0.0215)))
+        else:
+            alt1 = parent.create_text(canx * 0.62, cany * 0.75, text=f'  {round(prem_n1, 2)}  руб.',
+                                      font=("Times", int(yax * 0.0215)))
+    # расчет n-% премии для AC2
+    else:
+        prem_n2 = (pers / 100) * ocl2
+        if alt2 != 0:
+            parent.delete(alt2)
+            alt2 = parent.create_text(canx * 0.62, cany * 0.75, text=f'  {round(prem_n2, 2)}  руб.',
+                                      font=("Times", int(yax * 0.0215)))
+        else:
+            alt2 = parent.create_text(canx * 0.62, cany * 0.75, text=f'  {round(prem_n2, 2)}  руб.',
+                                      font=("Times", int(yax * 0.0215)))
+
+    # перерасчет итоговых значений
+    res_tot.delete('all')
+    sum_res = ocl1 + ocl2 + premia1 + premia2 + premia201 + premia202 + prem_n1 + prem_n2 + \
+              (inp_ver[1] * inp_ver[-1]) + (inp_ver[3] * inp_ver[-1])
+    res_tot.create_text(totx * 0.5, toty * 0.15, text=f'Сумма:  {round(sum_res, 2)}  руб.',
+                        font=("Times", int(yax * 0.0225)))
+    sum_res_per = sum_res - (sum_res * 0.13)
+    res_tot.create_text(totx * 0.5, toty * 0.37, text=f'Сумма с процентами:  {round(sum_res_per, 2)}  руб.',
+                        font=("Times", int(yax * 0.0225)))
+    res_tot.create_text(totx * 0.5, toty * 0.59, text=f'Аванс:  {inp_ver[4]}  руб.',
+                        font=("Times", int(yax * 0.0225)))
+    res_tot.create_text(totx * 0.5, toty * 0.81, text=f'Сумма на руки:  {round(sum_res_per - inp_ver[4], 2)}  руб.',
+                        font=("Times", int(yax * 0.0225)))
+
+
+# ФУНКЦИИ ПРОВЕРКИ И ВЫДЕЛЕНИЯ ОШИБОК ПРОГРАММЫ
+def incorrect_input(blog, mode='int'):
+    """
+    Функция для проверки ввода цифр во все основные поля программы, и пометка их в случае ошибки
+    """
+
+    try:
+        if mode == 'fl':
+            get_s = blog.get(0.0, END).strip()
+            get_s = get_s.replace(',', '.') if ',' in get_s else get_s
+            res = float(get_s)
+        else:
+            res = int(blog.get(0.0, END).strip())
+        blog.configure(highlightthickness=0, highlightbackground='black', highlightcolor="black")
+        return res
+    except:
+        blog.configure(highlightthickness=3, highlightbackground='red', highlightcolor="red")
+        return
+
+
+def check_keys(event, field):
+    """
+    Функция для ограничений на ввод символов в поля программы
+    """
+
+    s = field.get(0.0, END).strip()
+    lim = ((field.winfo_reqwidth() + 3) // 10)
+    if (len(s) == lim or (event.state & 4 and event.keysym == "v")) and event.keysym != 'BackSpace':
+        return 'break'
+    elif event.char == ' ' or event.keysym == 'Return' or event.keysym == 'Tab' or event.char.isalpha():
+        return 'break'
+
+
+def push_check(days, ogib):
+    """
+    Функция для проверки обязательного выбора количества дней
+    """
+
+    if days:
+        ogib.configure(highlightthickness=0)
+        return True
+    else:
+        ogib.configure(highlightthickness=3, highlightbackground="red")
+        return False
+
+
+def proof_days(l, frame):
+    """
+    Функция для проверки наличия хотя бы одного значения в блоке полей для ввода коробок
+    """
+
+    control = all([all([k == '' for k in x]) for i in l for x in i])
+    if frame != 0:
+        if control:
+            frame.configure(highlightthickness=3, highlightbackground='red', highlightcolor="red")
+            return 0
+        else:
+            frame.configure(highlightthickness=0, highlightbackground='black', highlightcolor="black")
+            return 1
+    return 0
+
+
+def ch_but(but):
+    """
+    Функция для управлением блокировки полей ввода ставок
+    """
+
+    if but == 0:
+        if stav_d.get():
+            st_day_t.configure(state=DISABLED, bg='#f2f2f2')
+        else:
+            st_day_t.configure(state=NORMAL, bg='white')
+    else:
+        if stav_n.get():
+            st_nig_t.configure(state=DISABLED, bg='#f2f2f2')
+        else:
+            st_nig_t.configure(state=NORMAL, bg='white')
+
+
+# Начало работы программы - запуск первой основной функции
+win_one()
+
+# Удержание окна программы открытым
+window.mainloop()
