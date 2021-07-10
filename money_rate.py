@@ -462,13 +462,13 @@ def calculation(days_ac1, days_ac2, fields):
     per_text1_1.place(relx=0.449, rely=0.44, anchor=CENTER)
     per_text1_1.configure(font=("Times", int(yax * 0.0225)))
     per_text1_1.bind('<Key>', partial(check_keys, field=per_text1_1))
-    per_text1_1.insert(0.0, 0)
+    per_text1_1.insert(0.0, 10)
 
     per_text1_2 = Text(res_ac1, width=2, height=1)
     per_text1_2.place(relx=0.449, rely=0.59, anchor=CENTER)
     per_text1_2.configure(font=("Times", int(yax * 0.0225)))
     per_text1_2.bind('<Key>', partial(check_keys, field=per_text1_2))
-    per_text1_2.insert(0.0, 0)
+    per_text1_2.insert(0.0, 10)
 
     per_text1_3 = Text(res_ac1, width=2, height=1)
     per_text1_3.place(relx=0.449, rely=0.74, anchor=CENTER)
@@ -501,13 +501,13 @@ def calculation(days_ac1, days_ac2, fields):
     per_text2_1.place(relx=0.449, rely=0.44, anchor=CENTER)
     per_text2_1.configure(font=("Times", int(yax * 0.0225)))
     per_text2_1.bind('<Key>', partial(check_keys, field=per_text2_1))
-    per_text2_1.insert(0.0, 0)
+    per_text2_1.insert(0.0, 10)
 
     per_text2_2 = Text(res_ac2, width=2, height=1)
     per_text2_2.place(relx=0.449, rely=0.59, anchor=CENTER)
     per_text2_2.configure(font=("Times", int(yax * 0.0225)))
     per_text2_2.bind('<Key>', partial(check_keys, field=per_text2_2))
-    per_text2_2.insert(0.0, 0)
+    per_text2_2.insert(0.0, 10)
 
     per_text2_3 = Text(res_ac2, width=2, height=1)
     per_text2_3.place(relx=0.449, rely=0.74, anchor=CENTER)
