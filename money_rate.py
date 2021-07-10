@@ -461,11 +461,11 @@ def calculation(days_ac1, days_ac2, fields):
     res_ac1.create_text(canx * 0.39, cany * 0.59, text=f'Премия       %:', font=("Times", int(yax * 0.0225)))
     res_ac1.create_text(canx * 0.39, cany * 0.74, text=f'Премия       %:', font=("Times", int(yax * 0.0225)))
 
-    per_text1 = Text(res_ac1, width=2, height=1)
-    per_text1.place(relx=0.449, rely=0.74, anchor=CENTER)
-    per_text1.configure(font=("Times", int(yax * 0.0225)))
-    per_text1.bind('<Key>', partial(check_keys, field=per_text1))
-    per_text1.insert(0.0, 0)
+    per_text1_1 = Text(res_ac1, width=2, height=1)
+    per_text1_1.place(relx=0.449, rely=0.44, anchor=CENTER)
+    per_text1_1.configure(font=("Times", int(yax * 0.0225)))
+    per_text1_1.bind('<Key>', partial(check_keys, field=per_text1_1))
+    per_text1_1.insert(0.0, 0)
 
     per_text1_2 = Text(res_ac1, width=2, height=1)
     per_text1_2.place(relx=0.449, rely=0.59, anchor=CENTER)
@@ -474,13 +474,15 @@ def calculation(days_ac1, days_ac2, fields):
     per_text1_2.insert(0.0, 0)
 
     per_text1_3 = Text(res_ac1, width=2, height=1)
-    per_text1_3.place(relx=0.449, rely=0.44, anchor=CENTER)
+    per_text1_3.place(relx=0.449, rely=0.74, anchor=CENTER)
     per_text1_3.configure(font=("Times", int(yax * 0.0225)))
     per_text1_3.bind('<Key>', partial(check_keys, field=per_text1_3))
     per_text1_3.insert(0.0, 0)
+    # print(res_ac1.coords(per_text1_3))
 
     but_per1 = Button(res_ac1, text="Пересчитать", font=("Times", 11), bg='#D8D8D8',
-                      width=10, height=1, relief='groove', command=partial(prem_pers, per_text1))
+                      width=10, height=1, relief='groove',
+                      command=partial(prem_pers, [per_text1_1, per_text1_2, per_text1_3]))
     but_per1.place(relx=0.5, rely=0.9, anchor=CENTER)
 
     # результаты для AC2
@@ -523,8 +525,8 @@ def calculation(days_ac1, days_ac2, fields):
     res_tot = Canvas(width=totx, height=toty, bg='#e0e0e0', highlightthickness=1, highlightbackground="black")
     res_tot.place(relx=0.5, rely=0.74, anchor=CENTER)
 
-    prem_pers(per_text1)
-    prem_pers(per_text2)
+    prem_pers([per_text1_1, per_text1_2, per_text1_3])
+    # prem_pers(per_text2)
 
 
 def prem_pers(tf):
@@ -533,19 +535,20 @@ def prem_pers(tf):
     """
 
     global ocl1, ocl2, alt1, alt2, prem_n1, prem_n2, res_tot
-    pers = int(tf.get(0.0, END).strip())
-    parent = tf.master
+    pers = [int(x.get(0.0, END).strip()) for x in tf]
+    parent = tf[0].master
 
     # расчет n-% премии для AC1
     if parent == res_ac1:
-        prem_n1 = (pers / 100) * ocl1
-        if alt1 != 0:
-            parent.delete(alt1)
-            alt1 = parent.create_text(canx * 0.66, cany * 0.74, text=f'  {round(prem_n1, 2)}  руб.',
-                                      font=("Times", int(yax * 0.0225)))
-        else:
-            alt1 = parent.create_text(canx * 0.66, cany * 0.74, text=f'  {round(prem_n1, 2)}  руб.',
-                                      font=("Times", int(yax * 0.0225)))
+        prem_n1 = [(i / 100) * ocl1 for i in pers]
+        for i in prem_n1:
+            if alt1 != 0:
+                parent.delete(alt1)
+                alt1 = parent.create_text(canx * 0.66, cany * 0.74, text=f'  {round(i, 2)}  руб.',
+                                          font=("Times", int(yax * 0.0225)))
+            else:
+                alt1 = parent.create_text(canx * 0.66, cany * 0.74, text=f'  {round(i, 2)}  руб.',
+                                          font=("Times", int(yax * 0.0225)))
     # расчет n-% премии для AC2
     else:
         prem_n2 = (pers / 100) * ocl2
@@ -559,7 +562,7 @@ def prem_pers(tf):
 
     # перерасчет итоговых значений
     res_tot.delete('all')
-    sum_res = ocl1 + ocl2 + premia1 + premia2 + premia201 + premia202 + prem_n1 + prem_n2 + \
+    sum_res = ocl1 + ocl2 + premia1 + premia2 + premia201 + premia202 + sum(prem_n1) + prem_n2 + \
               (inp_ver[1] * inp_ver[-1]) + (inp_ver[3] * inp_ver[-1])
     res_tot.create_text(totx * 0.5, toty * 0.15, text=f'Сумма:  {round(sum_res, 2)}  руб.',
                         font=("Times", int(yax * 0.0225)))
