@@ -457,9 +457,9 @@ def calculation(days_ac1, days_ac2, fields):
     premia201 = 0.2 * ocl1
     # res_ac1.create_text(canx * 0.5, cany * 0.6, text=f'Премия  20%:  {round(premia201, 2)}  руб.',
     #                     font=("Times", int(yax * 0.0225)))
-    res_ac1.create_text(canx * 0.39, cany * 0.44, text=f'Премия        %:', font=("Times", int(yax * 0.0225)))
-    res_ac1.create_text(canx * 0.39, cany * 0.59, text=f'Премия        %:', font=("Times", int(yax * 0.0225)))
-    res_ac1.create_text(canx * 0.39, cany * 0.74, text=f'Премия        %:', font=("Times", int(yax * 0.0225)))
+    res_ac1.create_text(canx * 0.39, cany * 0.44, text=f'Премия       %:', font=("Times", int(yax * 0.0225)))
+    res_ac1.create_text(canx * 0.39, cany * 0.59, text=f'Премия       %:', font=("Times", int(yax * 0.0225)))
+    res_ac1.create_text(canx * 0.39, cany * 0.74, text=f'Премия       %:', font=("Times", int(yax * 0.0225)))
 
     per_text1 = Text(res_ac1, width=2, height=1)
     per_text1.place(relx=0.449, rely=0.74, anchor=CENTER)
@@ -470,10 +470,14 @@ def calculation(days_ac1, days_ac2, fields):
     per_text1_2 = Text(res_ac1, width=2, height=1)
     per_text1_2.place(relx=0.449, rely=0.59, anchor=CENTER)
     per_text1_2.configure(font=("Times", int(yax * 0.0225)))
+    per_text1_2.bind('<Key>', partial(check_keys, field=per_text1_2))
+    per_text1_2.insert(0.0, 0)
 
     per_text1_3 = Text(res_ac1, width=2, height=1)
     per_text1_3.place(relx=0.449, rely=0.44, anchor=CENTER)
     per_text1_3.configure(font=("Times", int(yax * 0.0225)))
+    per_text1_3.bind('<Key>', partial(check_keys, field=per_text1_3))
+    per_text1_3.insert(0.0, 0)
 
     but_per1 = Button(res_ac1, text="Пересчитать", font=("Times", 11), bg='#D8D8D8',
                       width=10, height=1, relief='groove', command=partial(prem_pers, per_text1))
@@ -537,10 +541,10 @@ def prem_pers(tf):
         prem_n1 = (pers / 100) * ocl1
         if alt1 != 0:
             parent.delete(alt1)
-            alt1 = parent.create_text(canx * 0.68, cany * 0.74, text=f'  {round(prem_n1, 2)}  руб.',
+            alt1 = parent.create_text(canx * 0.66, cany * 0.74, text=f'  {round(prem_n1, 2)}  руб.',
                                       font=("Times", int(yax * 0.0225)))
         else:
-            alt1 = parent.create_text(canx * 0.68, cany * 0.74, text=f'  {round(prem_n1, 2)}  руб.',
+            alt1 = parent.create_text(canx * 0.66, cany * 0.74, text=f'  {round(prem_n1, 2)}  руб.',
                                       font=("Times", int(yax * 0.0225)))
     # расчет n-% премии для AC2
     else:
