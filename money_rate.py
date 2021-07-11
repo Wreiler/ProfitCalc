@@ -6,6 +6,8 @@ from tkinter.messagebox import *
 from functools import partial
 import json
 import datetime
+from yaml import safe_load, dump
+
 
 # Для вывода иконки в панель задач
 myappid = 'mycompany.myproduct.subproduct.version'
@@ -23,7 +25,10 @@ window.resizable(0, 0)
 # Константы, необходимые для работы программы
 frame_d1, frame_d2 = 0, 0  # - блоки набора коробок за день
 d_ac1, d_ac2 = [], []  # - контейнеры для количества коробок за день
-std, stn = 140.13, 28.026  # - ставки в день и ночь
+
+f = open('coefs.yaml', mode='r', encoding='utf-8')
+temp = safe_load(f)
+std, stn = temp['rates']['day_hour'], temp['rates']['night_hour']  # - ставки в день и ночь
 hours = 11.3  # - часы работы
 file_name = ''  # - default для имени файла
 alt1, alt2 = [0, 0, 0], [0, 0, 0]  # - контейнеры окон для ввода процентов n-% премии
@@ -415,7 +420,28 @@ def evaluate():
     if None in inp_ver or 0 in check:
         return
 
-    # очистка и переход к вычислениям иотображению их результатов
+    # сохранение коэффициентов в yaml-файл
+    if stav_d.get():
+        coef1 = incorrect_input(st_day_t, 'fl')
+        to_yaml1 = {'rates': {'day_hour': coef1, 'night_hour': stn}}
+
+        with open('coefs.yaml', 'w') as t:
+            dump(to_yaml1, t, default_flow_style=False)
+    elif stav_n.get():
+        coef2 = incorrect_input(st_nig_t, 'fl')
+        to_yaml2 = {'rates': {'day_hour': std, 'night_hour': coef2}}
+
+        with open('coefs.yaml', 'w') as t:
+            dump(to_yaml2, t, default_flow_style=False)
+    elif stav_d.get() and stav_n.get():
+        coef1 = incorrect_input(st_day_t, 'fl')
+        coef2 = incorrect_input(st_nig_t, 'fl')
+        to_yaml3 = {'rates': {'day_hour': coef1, 'night_hour': coef2}}
+
+        with open('coefs.yaml', 'w') as t:
+            dump(to_yaml3, t, default_flow_style=False)
+
+    # очистка и переход к вычислениям и отображению их результатов
     for x in window.winfo_children():
         x.destroy()
     calculation(ac1_list, ac2_list, inp_ver)
@@ -552,24 +578,31 @@ def prem_pers(tf):
     if parent == res_ac1:
         prem_n1 = [(i / 100) * ocl1 for i in pers]
         for i in range(3):
+            ln = len(str(round(prem_n1[i], 2)).strip())
+            print(ln)
             if alt1[i] != 0:
                 parent.delete(alt1[i])
-                alt1[i] = parent.create_text(canx * 0.66, cany * rely, text=f'  {round(prem_n1[i], 2)}  руб.',
+                alt1[i] = parent.create_text(canx * 0.61 + canx * 0.01 * (ln-3), cany * rely,
+                                             text=f'  {round(prem_n1[i], 2)}  руб.',
                                              font=("Times", int(yax * 0.0225)))
             else:
-                alt1[i] = parent.create_text(canx * 0.66, cany * rely, text=f'  {round(prem_n1[i], 2)}  руб.',
+                alt1[i] = parent.create_text(canx * 0.61 + canx * 0.01 * (ln-3), cany * rely,
+                                             text=f'  {round(prem_n1[i], 2)}  руб.',
                                              font=("Times", int(yax * 0.0225)))
             rely += 0.15
     # расчет n-% премии для AC2
     else:
         prem_n2 = [(i / 100) * ocl2 for i in pers]
         for i in range(3):
+            ln = len(str(round(prem_n2[i], 2)).strip())
             if alt2[i] != 0:
                 parent.delete(alt2[i])
-                alt2[i] = parent.create_text(canx * 0.65, cany * rely, text=f'  {round(prem_n2[i], 2)}  руб.',
+                alt2[i] = parent.create_text(canx * 0.61 + canx * 0.01 * (ln-3), cany * rely,
+                                             text=f'  {round(prem_n2[i], 2)}  руб.',
                                              font=("Times", int(yax * 0.0225)))
             else:
-                alt2[i] = parent.create_text(canx * 0.65, cany * rely, text=f'  {round(prem_n2[i], 2)}  руб.',
+                alt2[i] = parent.create_text(canx * 0.61 + canx * 0.01 * (ln-3), cany * rely,
+                                             text=f'  {round(prem_n2[i], 2)}  руб.',
                                              font=("Times", int(yax * 0.0225)))
             rely += 0.15
 
