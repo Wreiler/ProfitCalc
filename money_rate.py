@@ -480,23 +480,23 @@ def calculation(days_ac1, days_ac2, fields):
     res_ac1.create_text(canx * 0.5, cany * 0.32,
                         text=f'Премия:  {round(premia1, 2)}  руб.',
                         font=("Times", int(yax * 0.0225)))
-    res_ac1.create_text(canx * 0.39, cany * 0.44, text=f'Премия       %:', font=("Times", int(yax * 0.0225)))
-    res_ac1.create_text(canx * 0.39, cany * 0.59, text=f'Премия       %:', font=("Times", int(yax * 0.0225)))
-    res_ac1.create_text(canx * 0.39, cany * 0.74, text=f'Премия       %:', font=("Times", int(yax * 0.0225)))
+    res_ac1.create_text(canx * 0.39, cany * 0.44, text=f'Премия          %:', font=("Times", int(yax * 0.0225)))
+    res_ac1.create_text(canx * 0.39, cany * 0.59, text=f'Премия          %:', font=("Times", int(yax * 0.0225)))
+    res_ac1.create_text(canx * 0.39, cany * 0.74, text=f'Премия          %:', font=("Times", int(yax * 0.0225)))
 
-    per_text1_1 = Text(res_ac1, width=2, height=1)
+    per_text1_1 = Text(res_ac1, width=3, height=1)
     per_text1_1.place(relx=0.449, rely=0.44, anchor=CENTER)
     per_text1_1.configure(font=("Times", int(yax * 0.0225)))
     per_text1_1.bind('<Key>', partial(check_keys, field=per_text1_1))
     per_text1_1.insert(0.0, 10)
 
-    per_text1_2 = Text(res_ac1, width=2, height=1)
+    per_text1_2 = Text(res_ac1, width=3, height=1)
     per_text1_2.place(relx=0.449, rely=0.59, anchor=CENTER)
     per_text1_2.configure(font=("Times", int(yax * 0.0225)))
     per_text1_2.bind('<Key>', partial(check_keys, field=per_text1_2))
     per_text1_2.insert(0.0, 10)
 
-    per_text1_3 = Text(res_ac1, width=2, height=1)
+    per_text1_3 = Text(res_ac1, width=3, height=1)
     per_text1_3.place(relx=0.449, rely=0.74, anchor=CENTER)
     per_text1_3.configure(font=("Times", int(yax * 0.0225)))
     per_text1_3.bind('<Key>', partial(check_keys, field=per_text1_3))
@@ -519,23 +519,23 @@ def calculation(days_ac1, days_ac2, fields):
     res_ac2.create_text(canx * 0.5, cany * 0.32,
                         text=f'Премия:  {round(premia2, 2)}  руб.',
                         font=("Times", int(yax * 0.0225)))
-    res_ac2.create_text(canx * 0.39, cany * 0.44, text=f'Премия       %:', font=("Times", int(yax * 0.0225)))
-    res_ac2.create_text(canx * 0.39, cany * 0.59, text=f'Премия       %:', font=("Times", int(yax * 0.0225)))
-    res_ac2.create_text(canx * 0.39, cany * 0.74, text=f'Премия       %:', font=("Times", int(yax * 0.0225)))
+    res_ac2.create_text(canx * 0.39, cany * 0.44, text=f'Премия          %:', font=("Times", int(yax * 0.0225)))
+    res_ac2.create_text(canx * 0.39, cany * 0.59, text=f'Премия          %:', font=("Times", int(yax * 0.0225)))
+    res_ac2.create_text(canx * 0.39, cany * 0.74, text=f'Премия          %:', font=("Times", int(yax * 0.0225)))
 
-    per_text2_1 = Text(res_ac2, width=2, height=1)
+    per_text2_1 = Text(res_ac2, width=3, height=1)
     per_text2_1.place(relx=0.449, rely=0.44, anchor=CENTER)
     per_text2_1.configure(font=("Times", int(yax * 0.0225)))
     per_text2_1.bind('<Key>', partial(check_keys, field=per_text2_1))
     per_text2_1.insert(0.0, 10)
 
-    per_text2_2 = Text(res_ac2, width=2, height=1)
+    per_text2_2 = Text(res_ac2, width=3, height=1)
     per_text2_2.place(relx=0.449, rely=0.59, anchor=CENTER)
     per_text2_2.configure(font=("Times", int(yax * 0.0225)))
     per_text2_2.bind('<Key>', partial(check_keys, field=per_text2_2))
     per_text2_2.insert(0.0, 10)
 
-    per_text2_3 = Text(res_ac2, width=2, height=1)
+    per_text2_3 = Text(res_ac2, width=3, height=1)
     per_text2_3.place(relx=0.449, rely=0.74, anchor=CENTER)
     per_text2_3.configure(font=("Times", int(yax * 0.0225)))
     per_text2_3.bind('<Key>', partial(check_keys, field=per_text2_3))
@@ -582,11 +582,11 @@ def prem_pers(tf):
             print(ln)
             if alt1[i] != 0:
                 parent.delete(alt1[i])
-                alt1[i] = parent.create_text(canx * 0.61 + canx * 0.01 * (ln-3), cany * rely,
+                alt1[i] = parent.create_text(canx * 0.63 + canx * 0.01 * (ln-3), cany * rely,
                                              text=f'  {round(prem_n1[i], 2)}  руб.',
                                              font=("Times", int(yax * 0.0225)))
             else:
-                alt1[i] = parent.create_text(canx * 0.61 + canx * 0.01 * (ln-3), cany * rely,
+                alt1[i] = parent.create_text(canx * 0.63 + canx * 0.01 * (ln-3), cany * rely,
                                              text=f'  {round(prem_n1[i], 2)}  руб.',
                                              font=("Times", int(yax * 0.0225)))
             rely += 0.15
@@ -597,11 +597,11 @@ def prem_pers(tf):
             ln = len(str(round(prem_n2[i], 2)).strip())
             if alt2[i] != 0:
                 parent.delete(alt2[i])
-                alt2[i] = parent.create_text(canx * 0.61 + canx * 0.01 * (ln-3), cany * rely,
+                alt2[i] = parent.create_text(canx * 0.63 + canx * 0.01 * (ln-3), cany * rely,
                                              text=f'  {round(prem_n2[i], 2)}  руб.',
                                              font=("Times", int(yax * 0.0225)))
             else:
-                alt2[i] = parent.create_text(canx * 0.61 + canx * 0.01 * (ln-3), cany * rely,
+                alt2[i] = parent.create_text(canx * 0.63 + canx * 0.01 * (ln-3), cany * rely,
                                              text=f'  {round(prem_n2[i], 2)}  руб.',
                                              font=("Times", int(yax * 0.0225)))
             rely += 0.15
