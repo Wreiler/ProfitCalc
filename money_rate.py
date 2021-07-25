@@ -120,7 +120,7 @@ def new_file():
         save_as_file()
     for x in window.winfo_children():
         x.destroy()
-    win_one()
+    win_fst()
     file_name = ''
 
 
@@ -151,7 +151,7 @@ def make_menu(n):
 
 
 # ФУНКЦИИ ОТОБРАЖЕНИЯ ОСНОВНЫХ ОКОН И ПОЛЕЙ ПРОГРАММЫ
-def win_one():
+def win_fst():
     """
     Функция для отображения полей и элементов первого окна программы (окна ввода)
     """
@@ -256,9 +256,9 @@ def win_one():
     but_culc.place(relx=0.5, rely=0.93, anchor=CENTER)
 
 
-def win_sec():
+def win_frth():
     """
-    Функция для отображения полей и элементов второго окна программы (окна результатов)
+    Функция для отображения полей и элементов четвертого окна программы (окна результатов)
     """
 
     make_menu(2)
@@ -361,7 +361,7 @@ def back():
     # очистка экрана и отображение первого окна
     for x in window.winfo_children():
         x.destroy()
-    win_one()
+    win_fst()
 
     # обработка значений из "памяти ввода"
     txts, sts = ('dtext_ac1', 'ntext_ac1', 'dtext_ac2', 'ntext_ac2', 'text_ava'), ('st_day_t', 'st_nig_t')
@@ -445,7 +445,7 @@ def evaluate():
     for x in window.winfo_children():
         x.destroy()
     calculation(ac1_list, ac2_list, inp_ver)
-    win_sec()
+    win_frth()
 
 
 def calculation(days_ac1, days_ac2, fields):
@@ -701,7 +701,7 @@ def ch_but(but):
 
 
 # Начало работы программы - запуск первой основной функции
-win_one()
+win_fst()
 
 # Удержание окна программы открытым
 window.mainloop()
