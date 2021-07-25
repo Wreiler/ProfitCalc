@@ -158,28 +158,37 @@ def win_1st():
 
     make_menu(1)
 
+    letter = Label(window, text='ВХОДНЫЕ ДАННЫЕ ДЛЯ АС1:', font=("Times", int(yax * 0.036)),
+                   bg='#dbdbdb', bd=3, relief='raised')
+    letter.place(relx=0.5, rely=0.05, anchor=CENTER)
+
     # дни и ночи для AC1
     global dlab_ac1, dtext_ac1, nlab_ac1, ntext_ac1, but_ac1, ogib1
     dlab_ac1 = Label(window, text='Количество дней (АС1):', font=("Times", int(yax * 0.0205)))
-    dlab_ac1.place(relx=0.4, rely=0.05, anchor=CENTER)
+    dlab_ac1.place(relx=0.4, rely=0.15, anchor=CENTER)
     dtext_ac1 = Text(window, width=3, height=1)
-    dtext_ac1.place(relx=0.515, rely=0.05, anchor=CENTER)
+    dtext_ac1.place(relx=0.515, rely=0.15, anchor=CENTER)
     dtext_ac1.configure(font=f'garamond {round(yax * 0.0175)}')
     dtext_ac1.bind('<Key>', partial(check_keys, field=dtext_ac1))
 
     nlab_ac1 = Label(window, text='и ночей (АС1):', font=("Times", int(yax * 0.0205)))
-    nlab_ac1.place(relx=0.6, rely=0.05, anchor=CENTER)
+    nlab_ac1.place(relx=0.6, rely=0.15, anchor=CENTER)
     ntext_ac1 = Text(window, width=3, height=1)
-    ntext_ac1.place(relx=0.682, rely=0.05, anchor=CENTER)
+    ntext_ac1.place(relx=0.682, rely=0.15, anchor=CENTER)
     ntext_ac1.configure(font=f'garamond {round(yax * 0.0175)}')
     ntext_ac1.bind('<Key>', partial(check_keys, field=ntext_ac1))
 
     # кнопка для принятия количества дней
     ogib1 = Canvas(width=65, height=30)
-    ogib1.place(relx=0.5, rely=0.105, anchor=CENTER)
-    but_ac1 = Button(ogib1, text="Принять", font=("Times", round(yax * 0.014)), bg='#D8D8D8',
+    ogib1.place(relx=0.5, rely=0.215, anchor=CENTER)
+    but_ac1 = Button(ogib1, text="Принять", font=("Times", round(yax * 0.016)), bg='#D8D8D8',
                      width=7, height=1, relief='groove', command=ac1_print)
     but_ac1.place(relx=0.5, rely=0.5, anchor=CENTER)
+
+    # кнопка для вычисления и перехода ко второму окну
+    but_sec = Button(window, text="Далее", font=("Times", int(yax * 0.0178)), bg='#D8D8D8',
+                     width=10, height=1, relief='groove', command=evaluate)
+    but_sec.place(relx=0.5, rely=0.93, anchor=CENTER)
 
 
 def win_2nd():
@@ -266,7 +275,7 @@ def win_3rd():
     ch_nig.place(relx=0.82, rely=0.84, anchor=CENTER)
     stav_n.set(True)
 
-    # кнопка для вычисления и перехода ко второму окну
+    # кнопка для вычисления и перехода к четвертому окну
     but_culc = Button(window, text="Вычислить", font=("Times", int(yax * 0.0188)), bg='#D8D8D8',
                       width=10, height=1, relief='groove', command=evaluate)
     but_culc.place(relx=0.5, rely=0.93, anchor=CENTER)
@@ -305,27 +314,32 @@ def ac1_print():
 
     frame_d1 = Canvas(width=xax - 10, height=yax * 0.068 * (days // 10 if days % 10 == 0 else (days // 10) + 1),
                       highlightthickness=0, selectborderwidth=3)
-    frame_d1.place(relx=0.5, rely=0.135, anchor='n')
+    frame_d1.place(relx=0.5, rely=0.265, anchor='n')
     rs, cs = 1, 1
     for i in range(days):
         if i in [10, 20, 30]:
             rs += 1
             cs -= 10
-        f = Canvas(frame_d1, width=xax * 0.0846, height=yax * 0.0788,
+        f = Canvas(frame_d1, width=xax * 0.09, height=yax * 0.16,
                    highlightthickness=0.5, highlightbackground="black", bg='#dedede')
-        f.grid(row=rs, column=cs + i, sticky='e', padx=2, pady=2)
-        f.create_text(xax * 0.0846 * 0.5, yax * 0.0788 * 0.165, text=f'{i + 1}',
+        f.grid(row=rs, column=cs + i, sticky='e', padx=1, pady=5)
+        f.create_text(xax * 0.09 * 0.5, yax * 0.16 * 0.165, text=f'{i + 1}',
                       font=("Times", int(yax * 0.0175), 'italic'))
+        f.create_line(5, yax * 0.16 * 0.72, xax * 0.09 - 5, yax * 0.16 * 0.72, fill='#333', width=1)
         for k in range(3):
             text1 = Text(f, width=3, height=1)
-            text1.place(relx=0.25 * (k + 1), rely=0.46, anchor=CENTER)
+            text1.place(relx=0.25 * (k + 1), rely=0.4, anchor=CENTER)
             text1.configure(font=f'garamond {round(yax * 0.014)}')
             text1.bind('<Key>', partial(check_keys, field=text1))
             text2 = Text(f, width=3, height=1)
-            text2.place(relx=0.25 * (k + 1), rely=0.8, anchor=CENTER)
+            text2.place(relx=0.25 * (k + 1), rely=0.58, anchor=CENTER)
             text2.configure(font=f'garamond {round(yax * 0.014)}')
             text2.bind('<Key>', partial(check_keys, field=text2))
-            d_ac1.append((text1, text2))
+            text3 = Text(f, width=3, height=1, bg='#f2f2f2')
+            text3.place(relx=0.25 * (k + 1), rely=0.84, anchor=CENTER)
+            text3.configure(font=f'garamond {round(yax * 0.014)}', state=DISABLED)
+            text3.bind('<Key>', partial(check_keys, field=text3))
+            d_ac1.append((text1, text2, text3))
 
 
 def ac2_print():
