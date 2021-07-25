@@ -120,7 +120,7 @@ def new_file():
         save_as_file()
     for x in window.winfo_children():
         x.destroy()
-    win_fst()
+    win_1st()
     file_name = ''
 
 
@@ -151,9 +151,9 @@ def make_menu(n):
 
 
 # ФУНКЦИИ ОТОБРАЖЕНИЯ ОСНОВНЫХ ОКОН И ПОЛЕЙ ПРОГРАММЫ
-def win_fst():
+def win_1st():
     """
-    Функция для отображения полей и элементов первого окна программы (окна ввода)
+    Функция для отображения полей и элементов первого окна программы (ввод данных для AC1)
     """
 
     make_menu(1)
@@ -181,6 +181,14 @@ def win_fst():
                      width=7, height=1, relief='groove', command=ac1_print)
     but_ac1.place(relx=0.5, rely=0.5, anchor=CENTER)
 
+
+def win_2nd():
+    """
+    Функция для отображения полей и элементов второго окна программы (ввод данных для AC2)
+    """
+
+    make_menu(1)
+
     # дни и ночи для AC2
     global dlab_ac2, dtext_ac2, nlab_ac2, ntext_ac2, but_ac2, ogib2
     dlab_ac2 = Label(window, text='Количество дней (АС2):', font=("Times", int(yax * 0.0205)))
@@ -203,6 +211,14 @@ def win_fst():
     but_ac2 = Button(ogib2, text="Принять", font=("Times", round(yax * 0.014)), bg='#D8D8D8',
                      width=7, height=1, relief='groove', command=ac2_print)
     but_ac2.place(relx=0.5, rely=0.5, anchor=CENTER)
+
+
+def win_3rd():
+    """
+    Функция для отображения полей и элементов третьего окна программы (ввод данных для аванса и ставок)
+    """
+
+    make_menu(1)
 
     # аванс
     global lab_ava, text_ava
@@ -256,7 +272,7 @@ def win_fst():
     but_culc.place(relx=0.5, rely=0.93, anchor=CENTER)
 
 
-def win_frth():
+def win_4th():
     """
     Функция для отображения полей и элементов четвертого окна программы (окна результатов)
     """
@@ -361,7 +377,7 @@ def back():
     # очистка экрана и отображение первого окна
     for x in window.winfo_children():
         x.destroy()
-    win_fst()
+    win_1st()
 
     # обработка значений из "памяти ввода"
     txts, sts = ('dtext_ac1', 'ntext_ac1', 'dtext_ac2', 'ntext_ac2', 'text_ava'), ('st_day_t', 'st_nig_t')
@@ -445,7 +461,7 @@ def evaluate():
     for x in window.winfo_children():
         x.destroy()
     calculation(ac1_list, ac2_list, inp_ver)
-    win_frth()
+    win_4th()
 
 
 def calculation(days_ac1, days_ac2, fields):
@@ -701,7 +717,7 @@ def ch_but(but):
 
 
 # Начало работы программы - запуск первой основной функции
-win_fst()
+win_1st()
 
 # Удержание окна программы открытым
 window.mainloop()
