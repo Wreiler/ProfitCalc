@@ -150,6 +150,15 @@ def make_menu(n):
     hm.add_command(label="Справка", command=about)
 
 
+def update():
+    if d_ac1:
+        d_ac1[0][2].config(state=NORMAL)
+        # d_ac1[0][2].config(text=str(d_ac1[0][0].get((0.0, END))))
+        d_ac1[0][2].config(state=DISABLED)
+        print('Up-Date')
+    window.after(1000, update)
+
+
 # ФУНКЦИИ ОТОБРАЖЕНИЯ ОСНОВНЫХ ОКОН И ПОЛЕЙ ПРОГРАММЫ
 def win_1st():
     """
@@ -184,6 +193,8 @@ def win_1st():
     but_ac1 = Button(ogib1, text="Принять", font=("Times", round(yax * 0.016)), bg='#D8D8D8',
                      width=7, height=1, relief='groove', command=ac1_print)
     but_ac1.place(relx=0.5, rely=0.5, anchor=CENTER)
+
+    window.after(1000, update)
 
     # кнопка для вычисления и перехода ко второму окну
     but_sec = Button(window, text="Далее", font=("Times", int(yax * 0.0178)), bg='#D8D8D8',
@@ -338,7 +349,7 @@ def ac1_print():
             text3 = Text(f, width=3, height=1, bg='#f2f2f2')
             text3.place(relx=0.25 * (k + 1), rely=0.84, anchor=CENTER)
             text3.configure(font=f'garamond {round(yax * 0.014)}', state=DISABLED)
-            text3.bind('<Key>', partial(check_keys, field=text3))
+            # text3.bind('<Key>', partial(check_keys, field=text3))
             d_ac1.append((text1, text2, text3))
 
 
