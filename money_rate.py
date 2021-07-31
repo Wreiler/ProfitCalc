@@ -152,11 +152,18 @@ def make_menu(n):
 
 def update():
     if d_ac1:
-        d_ac1[0][2].config(state=NORMAL)
-        # d_ac1[0][2].config(text=str(d_ac1[0][0].get((0.0, END))))
-        d_ac1[0][2].config(state=DISABLED)
-        print('Up-Date')
-    window.after(1000, update)
+        for i in d_ac1:
+            i[2].config(state=NORMAL)
+            try:
+                i[2].delete(1.0, END)
+                i[2].insert(0.0, round((int(i[1].get(0.0, END))/int(i[0].get(0.0, END)))*100))
+            except:
+                pass
+            d_ac1[0][2].config(state=DISABLED)
+        print('Up-Date1')
+    if d_ac2:
+        print('Up-Date2')
+    window.after(800, update)
 
 
 # ФУНКЦИИ ОТОБРАЖЕНИЯ ОСНОВНЫХ ОКОН И ПОЛЕЙ ПРОГРАММЫ
@@ -194,7 +201,7 @@ def win_1st():
                      width=7, height=1, relief='groove', command=ac1_print)
     but_ac1.place(relx=0.5, rely=0.5, anchor=CENTER)
 
-    window.after(1000, update)
+    window.after(800, update)
 
     # кнопка для вычисления и перехода ко второму окну
     but_sec = Button(window, text="Далее", font=("Times", int(yax * 0.0178)), bg='#D8D8D8',
@@ -224,6 +231,8 @@ def win_2nd():
     ntext_ac2.place(relx=0.682, rely=0.44, anchor=CENTER)
     ntext_ac2.configure(font=f'garamond {round(yax * 0.0175)}')
     ntext_ac2.bind('<Key>', partial(check_keys, field=ntext_ac2))
+
+    window.after(1000, update)
 
     # кнопка для принятия количества дней
     ogib2 = Canvas(width=65, height=30)
