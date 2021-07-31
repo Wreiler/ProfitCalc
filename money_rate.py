@@ -357,7 +357,7 @@ def ac1_print():
             text2.bind('<Key>', partial(check_keys, field=text2))
             text3 = Text(f, width=3, height=1, bg='#f2f2f2')
             text3.place(relx=0.25 * (k + 1), rely=0.84, anchor=CENTER)
-            text3.configure(font=f'garamond {round(yax * 0.014)}', state=DISABLED)
+            text3.configure(font=f'garamond {round(yax * 0.014)}', state=DISABLED, fg='red')
             # text3.bind('<Key>', partial(check_keys, field=text3))
             d_ac1.append((text1, text2, text3))
 
