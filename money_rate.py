@@ -151,6 +151,10 @@ def make_menu(n):
 
 
 def update():
+    """
+    Функция для обновления окна программы и пересчета процентов выполненных коробок
+    """
+
     if d_ac1:
         for i in d_ac1:
             i[2].config(state=NORMAL)
@@ -158,7 +162,8 @@ def update():
                 i[2].delete(1.0, END)
                 i[2].insert(0.0, round((int(i[1].get(0.0, END))/int(i[0].get(0.0, END)))*100))
             except:
-                pass
+                i[2].delete(1.0, END)
+                i[2].insert(0.0, 0)
             d_ac1[0][2].config(state=DISABLED)
         print('Up-Date1')
     if d_ac2:
@@ -357,8 +362,7 @@ def ac1_print():
             text2.bind('<Key>', partial(check_keys, field=text2))
             text3 = Text(f, width=3, height=1, bg='#f2f2f2')
             text3.place(relx=0.25 * (k + 1), rely=0.84, anchor=CENTER)
-            text3.configure(font=f'garamond {round(yax * 0.014)}', state=DISABLED, fg='red')
-            # text3.bind('<Key>', partial(check_keys, field=text3))
+            text3.configure(font=f'garamond {round(yax * 0.014)} bold', state=DISABLED, fg='red')
             d_ac1.append((text1, text2, text3))
 
 
@@ -414,13 +418,15 @@ def back():
     win_1st()
 
     # обработка значений из "памяти ввода"
-    txts, sts = ('dtext_ac1', 'ntext_ac1', 'dtext_ac2', 'ntext_ac2', 'text_ava'), ('st_day_t', 'st_nig_t')
+    txts, sts = ('dtext_ac1', 'ntext_ac1'
+                 # , 'dtext_ac2', 'ntext_ac2', 'text_ava'
+                 ), ('st_day_t', 'st_nig_t')
     [eval(f'{txts[x]}.insert(0.0, inp_ver[x])') for x in range(len(txts))]
 
-    [eval(f'{sts[x]}.configure(state=NORMAL)') for x in range(len(sts))]
-    [eval(f'{sts[x]}.delete(0.0, END)') for x in range(len(sts))]
-    [eval(f'{sts[x]}.insert(0.0, inp_ver[x+5])') for x in range(len(sts))]
-    [eval(f'{sts[x]}.configure(state=DISABLED)') for x in range(len(sts))]
+    # [eval(f'{sts[x]}.configure(state=NORMAL)') for x in range(len(sts))]
+    # [eval(f'{sts[x]}.delete(0.0, END)') for x in range(len(sts))]
+    # [eval(f'{sts[x]}.insert(0.0, inp_ver[x+5])') for x in range(len(sts))]
+    # [eval(f'{sts[x]}.configure(state=DISABLED)') for x in range(len(sts))]
 
     # вставка значений в поля на свои места
     if ac1_list != [[[]]]:
@@ -428,11 +434,11 @@ def back():
         temp1 = [[k for k in x] for i in ac1_list for x in i]
         [[(x[0].insert(0.0, temp1[d_ac1.index(x)][0]), x[1].insert(0.0, temp1[d_ac1.index(x)][1]))
           for x in d_ac1[i:i + 3]] for i in range(0, len(d_ac1), 3)]
-    if ac2_list != [[[]]]:
-        ac2_print()
-        temp2 = [[k for k in x] for i in ac2_list for x in i]
-        [[(x[0].insert(0.0, temp2[d_ac2.index(x)][0]), x[1].insert(0.0, temp2[d_ac2.index(x)][1]))
-          for x in d_ac2[i:i + 3]] for i in range(0, len(d_ac2), 3)]
+    # if ac2_list != [[[]]]:
+    #     ac2_print()
+    #     temp2 = [[k for k in x] for i in ac2_list for x in i]
+    #     [[(x[0].insert(0.0, temp2[d_ac2.index(x)][0]), x[1].insert(0.0, temp2[d_ac2.index(x)][1]))
+    #       for x in d_ac2[i:i + 3]] for i in range(0, len(d_ac2), 3)]
 
 
 # ФУНКЦИИ ВЫЧИСЛЕНИЙ И ОБРАБОТКИ РЕЗУЛЬТАТОВ ПРОГРАММЫ
