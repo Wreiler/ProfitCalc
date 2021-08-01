@@ -276,56 +276,65 @@ def win_3rd():
 
     make_menu(1)
 
+    letter = Label(window, text='ВХОДНЫЕ ДАННЫЕ ДЛЯ АВАНСА И СТАВОК:', font=("Times", int(yax * 0.036)),
+                   bg='#dbdbdb', bd=3, relief='raised')
+    letter.place(relx=0.5, rely=0.05, anchor=CENTER)
+
     # аванс
     global lab_ava, text_ava
-    lab_ava = Label(window, text='Аванс:', font=("Times", int(yax * 0.0205)))
-    lab_ava.place(relx=0.23, rely=0.84, anchor=CENTER)
+    lab_ava = Label(window, text='Аванс:', font=("Times", int(yax * 0.0245)))
+    lab_ava.place(relx=0.45, rely=0.26, anchor=CENTER)
 
     text_ava = Text(window, width=8, height=1)
-    text_ava.place(relx=0.3, rely=0.84, anchor=CENTER)
-    text_ava.configure(font=f'garamond {round(yax * 0.0175)}')
+    text_ava.place(relx=0.53, rely=0.26, anchor=CENTER)
+    text_ava.configure(font=f'garamond {round(yax * 0.0195)}')
     text_ava.bind('<Key>', partial(check_keys, field=text_ava))
 
     # ставка в час для дня
     global st_day_lab, st_day_t, stav_d
-    st_day_lab = Label(window, text='Ставка в час (день):', font=("Times", int(yax * 0.0205)))
-    st_day_lab.place(relx=0.41, rely=0.84, anchor=CENTER)
+    st_day_lab = Label(window, text='Ставка в час (день):', font=("Times", int(yax * 0.0245)))
+    st_day_lab.place(relx=0.44, rely=0.44, anchor=CENTER)
 
     # поле для ставки для дня и управление им
     st_day_t = Text(window, width=8, height=1)
-    st_day_t.place(relx=0.52, rely=0.84, anchor=CENTER)
-    st_day_t.configure(font=f'garamond {round(yax * 0.0175)}', bg='#f2f2f2')
+    st_day_t.place(relx=0.58, rely=0.44, anchor=CENTER)
+    st_day_t.configure(font=f'garamond {round(yax * 0.0195)}', bg='#f2f2f2')
     st_day_t.bind('<Key>', partial(check_keys, field=st_day_t))
     st_day_t.insert(0.0, std)
     st_day_t.configure(state=DISABLED)
 
     stav_d = BooleanVar()
     ch_day = Checkbutton(text='', variable=stav_d, command=partial(ch_but, 0), takefocus=0)
-    ch_day.place(relx=0.57, rely=0.84, anchor=CENTER)
+    ch_day.place(relx=0.635, rely=0.44, anchor=CENTER)
     stav_d.set(True)
 
     # ставка в час для ночи
     global st_nig_lab, st_nig_t, stav_n
-    st_nig_lab = Label(window, text='Ставка в час (ночь):', font=("Times", int(yax * 0.0205)))
-    st_nig_lab.place(relx=0.66, rely=0.84, anchor=CENTER)
+    st_nig_lab = Label(window, text='Ставка в час (ночь):', font=("Times", int(yax * 0.0245)))
+    st_nig_lab.place(relx=0.44, rely=0.62, anchor=CENTER)
 
     # поле для ставки для ночи и управление им
     st_nig_t = Text(window, width=8, height=1)
-    st_nig_t.place(relx=0.77, rely=0.84, anchor=CENTER)
-    st_nig_t.configure(font=f'garamond {round(yax * 0.0175)}', bg='#f2f2f2')
+    st_nig_t.place(relx=0.58, rely=0.62, anchor=CENTER)
+    st_nig_t.configure(font=f'garamond {round(yax * 0.0195)}', bg='#f2f2f2')
     st_nig_t.bind('<Key>', partial(check_keys, field=st_nig_t))
     st_nig_t.insert(0.0, stn)
     st_nig_t.configure(state=DISABLED)
 
     stav_n = BooleanVar()
     ch_nig = Checkbutton(text='', variable=stav_n, command=partial(ch_but, 1), takefocus=0)
-    ch_nig.place(relx=0.82, rely=0.84, anchor=CENTER)
+    ch_nig.place(relx=0.635, rely=0.62, anchor=CENTER)
     stav_n.set(True)
 
     # кнопка для вычисления и перехода к четвертому окну
-    but_culc = Button(window, text="Вычислить", font=("Times", int(yax * 0.0188)), bg='#D8D8D8',
-                      width=10, height=1, relief='groove', command=evaluate)
-    but_culc.place(relx=0.5, rely=0.93, anchor=CENTER)
+    but_culc = Button(window, text="Вычислить", font=("Times", int(yax * 0.0178), 'bold'), bg='#D8D8D8',
+                      width=10, height=1, relief='groove', command=partial(evaluate, 3))
+    but_culc.place(relx=0.55, rely=0.93, anchor=CENTER)
+
+    # кнопка для возвращения назад ко второму окну
+    but_sec = Button(window, text="Назад", font=("Times", int(yax * 0.0178)), bg='#D8D8D8',
+                     width=10, height=1, relief='groove', command=partial(back, page=2))
+    but_sec.place(relx=0.45, rely=0.93, anchor=CENTER)
 
 
 def win_4th():
@@ -335,10 +344,12 @@ def win_4th():
 
     make_menu(2)
 
-    res = Label(window, text='Результаты', font=("Times", int(yax * 0.0305)))
-    res.place(relx=0.5, rely=0.04, anchor=CENTER)
+    res = Label(window, text='РЕЗУЛЬТАТЫ:', font=("Times", int(yax * 0.036)),
+                bg='#dbdbdb', bd=3, relief='raised')
+    res.place(relx=0.5, rely=0.03, anchor=CENTER)
+
     but_back = Button(window, text="Назад", font=("Times", int(yax * 0.0178)), bg='#D8D8D8',
-                      width=10, height=1, relief='groove', command=partial(back, 3))
+                      width=10, height=1, relief='groove', command=partial(back, page=3))
     but_back.place(relx=0.5, rely=0.93, anchor=CENTER)
 
 
@@ -474,7 +485,7 @@ def back(page):
               for x in d_ac2[i:i + 3]] for i in range(0, len(d_ac2), 3)]
     if page == 3:
         sts = ('st_day_t', 'st_nig_t')
-        eval('text_ava.insert(0.0, inp_ver[x])')
+        eval('text_ava.insert(0.0, inp_ver[4])')
         [eval(f'{sts[x]}.configure(state=NORMAL)') for x in range(len(sts))]
         [eval(f'{sts[x]}.delete(0.0, END)') for x in range(len(sts))]
         [eval(f'{sts[x]}.insert(0.0, inp_ver[x+5])') for x in range(len(sts))]
@@ -493,7 +504,7 @@ def data_package(page):
             ac1_list = [[(x[0].get(0.0, END).strip(), x[1].get(0.0, END).strip()) for x in d_ac1[i:i + 3]]
                         for i in range(0, len(d_ac1), 3)]
             elements = (dtext_ac1, ntext_ac1)
-            if len(inp_ver) < 7:
+            if len(inp_ver) < 4:
                 inp_ver = [incorrect_input(x) for x in elements]
         else:
             ac1_list = [[[]]]
@@ -507,8 +518,10 @@ def data_package(page):
         else:
             ac2_list = [[[]]]
     elif page == 3:
-        elements = (dtext_ac1, ntext_ac1, dtext_ac2, ntext_ac2, text_ava, st_day_t, st_nig_t)
-        inp_ver = [incorrect_input(x, 'fl') if x in (st_day_t, st_nig_t) else incorrect_input(x) for x in elements]
+        elements = (text_ava, st_day_t, st_nig_t)
+        if len(inp_ver) < 7:
+            inp_ver = af_2 + [incorrect_input(x, 'fl') if x in (st_day_t, st_nig_t)
+                              else incorrect_input(x) for x in elements]
 
 
 def evaluate(page):
@@ -516,11 +529,8 @@ def evaluate(page):
     Функция для управления вычислениями и их отображением
     """
 
-    # global inp_ver, ac1_list, ac2_list
-
     # запаковка данных и их проверка
     data_package(page)
-    # print(inp_ver, ac1_list, ac2_list)
     if page == 1:
         check1 = proof_days(ac1_list, frame_d1)
         el_check1 = [incorrect_input(x) for x in [dtext_ac1, ntext_ac1]]
@@ -547,6 +557,8 @@ def evaluate(page):
         global d_ac2
         d_ac2 = []
         print(f'Результаты: {inp_ver}')
+        global af_2
+        af_2 = inp_ver
         try:
             back(3)
         except:
@@ -754,7 +766,7 @@ def prem_pers(tf):
     res_tot.create_text(totx * 0.5, toty * 0.59, text=f'Аванс:  {inp_ver[4]}  руб.',
                         font=("Times", int(yax * 0.0225)))
     res_tot.create_text(totx * 0.5, toty * 0.81, text=f'Сумма на руки:  {round(sum_res_per - inp_ver[4], 2)}  руб.',
-                        font=("Times", int(yax * 0.0225)))
+                        font=("Times", int(yax * 0.0225), 'bold'))
 
 
 # ФУНКЦИИ ПРОВЕРКИ И ВЫДЕЛЕНИЯ ОШИБОК ПРОГРАММЫ
@@ -839,6 +851,7 @@ def ch_but(but):
 # Начало работы программы - запуск первой основной функции
 win_1st()
 # win_2nd()
+# win_3rd()
 
 # Удержание окна программы открытым
 window.mainloop()
