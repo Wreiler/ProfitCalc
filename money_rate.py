@@ -54,7 +54,7 @@ def open_file():
     if file:
         with open(file.name, 'r') as filej:
             ac1_list, ac2_list, inp_ver = json.load(filej)
-        back()
+        back(1)
         file_name = file.name
 
 
@@ -164,9 +164,18 @@ def update():
             except:
                 i[2].delete(1.0, END)
                 i[2].insert(0.0, 0)
-            d_ac1[0][2].config(state=DISABLED)
+            i[2].config(state=DISABLED)
         print('Up-Date1')
     if d_ac2:
+        for i in d_ac2:
+            i[2].config(state=NORMAL)
+            try:
+                i[2].delete(1.0, END)
+                i[2].insert(0.0, round((int(i[1].get(0.0, END))/int(i[0].get(0.0, END)))*100))
+            except:
+                i[2].delete(1.0, END)
+                i[2].insert(0.0, 0)
+            i[2].config(state=DISABLED)
         print('Up-Date2')
     window.after(800, update)
 
@@ -208,9 +217,9 @@ def win_1st():
 
     window.after(800, update)
 
-    # кнопка для вычисления и перехода ко второму окну
+    # кнопка перехода ко второму окну
     but_sec = Button(window, text="Далее", font=("Times", int(yax * 0.0178)), bg='#D8D8D8',
-                     width=10, height=1, relief='groove', command=evaluate)
+                     width=10, height=1, relief='groove', command=partial(evaluate, page=1))
     but_sec.place(relx=0.5, rely=0.93, anchor=CENTER)
 
 
@@ -237,14 +246,24 @@ def win_2nd():
     ntext_ac2.configure(font=f'garamond {round(yax * 0.0175)}')
     ntext_ac2.bind('<Key>', partial(check_keys, field=ntext_ac2))
 
-    window.after(1000, update)
-
     # кнопка для принятия количества дней
     ogib2 = Canvas(width=65, height=30)
     ogib2.place(relx=0.4995, rely=0.495, anchor=CENTER)
     but_ac2 = Button(ogib2, text="Принять", font=("Times", round(yax * 0.014)), bg='#D8D8D8',
                      width=7, height=1, relief='groove', command=ac2_print)
     but_ac2.place(relx=0.5, rely=0.5, anchor=CENTER)
+
+    window.after(800, update)
+
+    # кнопка перехода к третьему окну
+    but_sec = Button(window, text="Далее", font=("Times", int(yax * 0.0178)), bg='#D8D8D8',
+                     width=10, height=1, relief='groove', command=partial(evaluate, page=2))
+    but_sec.place(relx=0.55, rely=0.93, anchor=CENTER)
+
+    # кнопка для возвращения назад к первому окну
+    but_sec = Button(window, text="Назад", font=("Times", int(yax * 0.0178)), bg='#D8D8D8',
+                     width=10, height=1, relief='groove', command=partial(back, page=1))
+    but_sec.place(relx=0.45, rely=0.93, anchor=CENTER)
 
 
 def win_3rd():
@@ -316,7 +335,7 @@ def win_4th():
     res = Label(window, text='Результаты', font=("Times", int(yax * 0.0305)))
     res.place(relx=0.5, rely=0.04, anchor=CENTER)
     but_back = Button(window, text="Назад", font=("Times", int(yax * 0.0178)), bg='#D8D8D8',
-                      width=10, height=1, relief='groove', command=back)
+                      width=10, height=1, relief='groove', command=partial(back, 3))
     but_back.place(relx=0.5, rely=0.93, anchor=CENTER)
 
 
@@ -407,7 +426,7 @@ def ac2_print():
             d_ac2.append((text1, text2))
 
 
-def back():
+def back(page):
     """
     Функция для возвращения к первому окну программы и вставки введенных значений обратно в поля
     """
@@ -418,90 +437,122 @@ def back():
     win_1st()
 
     # обработка значений из "памяти ввода"
-    txts, sts = ('dtext_ac1', 'ntext_ac1'
-                 # , 'dtext_ac2', 'ntext_ac2', 'text_ava'
-                 ), ('st_day_t', 'st_nig_t')
-    [eval(f'{txts[x]}.insert(0.0, inp_ver[x])') for x in range(len(txts))]
+    if page == 1:
+        txts = ('dtext_ac1', 'ntext_ac1')
+        [eval(f'{txts[x]}.insert(0.0, inp_ver[x])') for x in range(len(txts))]
 
-    # [eval(f'{sts[x]}.configure(state=NORMAL)') for x in range(len(sts))]
-    # [eval(f'{sts[x]}.delete(0.0, END)') for x in range(len(sts))]
-    # [eval(f'{sts[x]}.insert(0.0, inp_ver[x+5])') for x in range(len(sts))]
-    # [eval(f'{sts[x]}.configure(state=DISABLED)') for x in range(len(sts))]
+        # вставка значений в поля на свои места
+        if ac1_list != [[[]]]:
+            ac1_print()
+            temp1 = [[k for k in x] for i in ac1_list for x in i]
+            [[(x[0].insert(0.0, temp1[d_ac1.index(x)][0]), x[1].insert(0.0, temp1[d_ac1.index(x)][1]))
+              for x in d_ac1[i:i + 3]] for i in range(0, len(d_ac1), 3)]
+    if page == 2:
+        txts = ('dtext_ac2', 'ntext_ac2')
+        [eval(f'{txts[x]}.insert(0.0, inp_ver[x])') for x in range(len(txts))]
 
-    # вставка значений в поля на свои места
-    if ac1_list != [[[]]]:
-        ac1_print()
-        temp1 = [[k for k in x] for i in ac1_list for x in i]
-        [[(x[0].insert(0.0, temp1[d_ac1.index(x)][0]), x[1].insert(0.0, temp1[d_ac1.index(x)][1]))
-          for x in d_ac1[i:i + 3]] for i in range(0, len(d_ac1), 3)]
-    # if ac2_list != [[[]]]:
-    #     ac2_print()
-    #     temp2 = [[k for k in x] for i in ac2_list for x in i]
-    #     [[(x[0].insert(0.0, temp2[d_ac2.index(x)][0]), x[1].insert(0.0, temp2[d_ac2.index(x)][1]))
-    #       for x in d_ac2[i:i + 3]] for i in range(0, len(d_ac2), 3)]
+        # вставка значений в поля на свои места
+        if ac2_list != [[[]]]:
+            ac2_print()
+            temp2 = [[k for k in x] for i in ac2_list for x in i]
+            [[(x[0].insert(0.0, temp2[d_ac2.index(x)][0]), x[1].insert(0.0, temp2[d_ac2.index(x)][1]))
+              for x in d_ac2[i:i + 3]] for i in range(0, len(d_ac2), 3)]
+    if page == 3:
+        sts = ('st_day_t', 'st_nig_t')
+        eval('text_ava.insert(0.0, inp_ver[x])')
+        [eval(f'{sts[x]}.configure(state=NORMAL)') for x in range(len(sts))]
+        [eval(f'{sts[x]}.delete(0.0, END)') for x in range(len(sts))]
+        [eval(f'{sts[x]}.insert(0.0, inp_ver[x+5])') for x in range(len(sts))]
+        [eval(f'{sts[x]}.configure(state=DISABLED)') for x in range(len(sts))]
 
 
 # ФУНКЦИИ ВЫЧИСЛЕНИЙ И ОБРАБОТКИ РЕЗУЛЬТАТОВ ПРОГРАММЫ
-def data_package():
+def data_package(page):
     """
     Функция для "запаковывания" введенных данных для удобства работы
     """
 
     global ac1_list, ac2_list, inp_ver
-    if push_check(d_ac1, ogib1):
-        ac1_list = [[(x[0].get(0.0, END).strip(), x[1].get(0.0, END).strip()) for x in d_ac1[i:i + 3]]
-                    for i in range(0, len(d_ac1), 3)]
-    else:
-        ac1_list = [[[]]]
-    if push_check(d_ac2, ogib2):
-        ac2_list = [[(x[0].get(0.0, END).strip(), x[1].get(0.0, END).strip()) for x in d_ac2[i:i + 3]]
-                    for i in range(0, len(d_ac2), 3)]
-    else:
-        ac2_list = [[[]]]
-    elements = (dtext_ac1, ntext_ac1, dtext_ac2, ntext_ac2, text_ava, st_day_t, st_nig_t)
-    inp_ver = [incorrect_input(x, 'fl') if x in (st_day_t, st_nig_t) else incorrect_input(x) for x in elements]
+    if page == 1:
+        if push_check(d_ac1, ogib1):
+            ac1_list = [[(x[0].get(0.0, END).strip(), x[1].get(0.0, END).strip()) for x in d_ac1[i:i + 3]]
+                        for i in range(0, len(d_ac1), 3)]
+            elements = (dtext_ac1, ntext_ac1)
+            inp_ver = [incorrect_input(x) for x in elements]
+        else:
+            ac1_list = [[[]]]
+    elif page == 2:
+        if push_check(d_ac2, ogib2):
+            ac2_list = [[(x[0].get(0.0, END).strip(), x[1].get(0.0, END).strip()) for x in d_ac2[i:i + 3]]
+                        for i in range(0, len(d_ac2), 3)]
+            elements = (dtext_ac1, ntext_ac1, dtext_ac2, ntext_ac2)
+            inp_ver = [incorrect_input(x) for x in elements]
+        else:
+            ac2_list = [[[]]]
+    elif page == 3:
+        elements = (dtext_ac1, ntext_ac1, dtext_ac2, ntext_ac2, text_ava, st_day_t, st_nig_t)
+        inp_ver = [incorrect_input(x, 'fl') if x in (st_day_t, st_nig_t) else incorrect_input(x) for x in elements]
 
 
-def evaluate():
+def evaluate(page):
     """
     Функция для управления вычислениями и их отображением
     """
 
-    global inp_ver, ac1_list, ac2_list
+    # global inp_ver, ac1_list, ac2_list
 
     # запаковка данных и их проверка
-    data_package()
-    check = (proof_days(ac1_list, frame_d1), proof_days(ac2_list, frame_d2))
-    print(f'Результаты: {inp_ver}')
-    if None in inp_ver or 0 in check:
-        return
+    data_package(page)
+    # print(inp_ver, ac1_list, ac2_list)
+    if page == 1:
+        check1 = proof_days(ac1_list, frame_d1)
+        el_check1 = [incorrect_input(x) for x in [dtext_ac1, ntext_ac1]]
+        if check1 == 0 or None in el_check1:
+            return
+        for x in window.winfo_children():
+            x.destroy()
+        global d_ac1
+        d_ac1 = []
+        print(f'Результаты: {inp_ver}')
+        win_2nd()
+    elif page == 2:
+        check2 = proof_days(ac2_list, frame_d2)
+        if check2 == 0:
+            return
+        for x in window.winfo_children():
+            x.destroy()
+        win_3rd()
+    elif page == 3:
+        if None in inp_ver:
+            return
+        print(f'Результаты: {inp_ver}')
 
-    # сохранение коэффициентов в yaml-файл
-    if stav_d.get():
-        coef1 = incorrect_input(st_day_t, 'fl')
-        to_yaml1 = {'rates': {'day_hour': coef1, 'night_hour': stn}}
+        # сохранение коэффициентов в yaml-файл
+        if stav_d.get():
+            coef1 = incorrect_input(st_day_t, 'fl')
+            to_yaml1 = {'rates': {'day_hour': coef1, 'night_hour': stn}}
 
-        with open('coefs.yaml', 'w') as t:
-            dump(to_yaml1, t, default_flow_style=False)
-    elif stav_n.get():
-        coef2 = incorrect_input(st_nig_t, 'fl')
-        to_yaml2 = {'rates': {'day_hour': std, 'night_hour': coef2}}
+            with open('coefs.yaml', 'w') as t:
+                dump(to_yaml1, t, default_flow_style=False)
+        elif stav_n.get():
+            coef2 = incorrect_input(st_nig_t, 'fl')
+            to_yaml2 = {'rates': {'day_hour': std, 'night_hour': coef2}}
 
-        with open('coefs.yaml', 'w') as t:
-            dump(to_yaml2, t, default_flow_style=False)
-    elif stav_d.get() and stav_n.get():
-        coef1 = incorrect_input(st_day_t, 'fl')
-        coef2 = incorrect_input(st_nig_t, 'fl')
-        to_yaml3 = {'rates': {'day_hour': coef1, 'night_hour': coef2}}
+            with open('coefs.yaml', 'w') as t:
+                dump(to_yaml2, t, default_flow_style=False)
+        elif stav_d.get() and stav_n.get():
+            coef1 = incorrect_input(st_day_t, 'fl')
+            coef2 = incorrect_input(st_nig_t, 'fl')
+            to_yaml3 = {'rates': {'day_hour': coef1, 'night_hour': coef2}}
 
-        with open('coefs.yaml', 'w') as t:
-            dump(to_yaml3, t, default_flow_style=False)
+            with open('coefs.yaml', 'w') as t:
+                dump(to_yaml3, t, default_flow_style=False)
 
-    # очистка и переход к вычислениям и отображению их результатов
-    for x in window.winfo_children():
-        x.destroy()
-    calculation(ac1_list, ac2_list, inp_ver)
-    win_4th()
+        # очистка и переход к вычислениям и отображению их результатов
+        for x in window.winfo_children():
+            x.destroy()
+        calculation(ac1_list, ac2_list, inp_ver)
+        win_4th()
 
 
 def calculation(days_ac1, days_ac2, fields):
@@ -758,6 +809,7 @@ def ch_but(but):
 
 # Начало работы программы - запуск первой основной функции
 win_1st()
+# win_2nd()
 
 # Удержание окна программы открытым
 window.mainloop()
