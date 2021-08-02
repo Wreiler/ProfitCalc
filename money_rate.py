@@ -34,6 +34,7 @@ file_name = ''  # - default для имени файла
 alt1, alt2 = [0, 0, 0], [0, 0, 0]  # - контейнеры окон для ввода процентов n-% премии
 prem_n1, prem_n2 = [], []  # - контейнеры для всех n-% премий
 inp_ver = []  # - контейнер для вставляемых значений
+now_pg = 0  # - номер текущей страницы
 
 
 # ФУНКЦИИ МЕНЮ ПРОГРАММЫ
@@ -69,8 +70,11 @@ def save_as_file():
     file = asksaveasfile(defaultextension=".json", initialfile=f'Расчет от {now.strftime("%d-%m-%Y")}')
     if file:
         with open(file.name, 'w') as filej:
-            data_package(3) # надо бы сделать определитель текущей страницы, чтобы сохранять текущие данные
-            pack = [ac1_list, ac2_list, inp_ver]
+            data_package(now_pg)
+            if now_pg == 1:
+                pack = [ac1_list, [[[]]], inp_ver]
+            elif now_pg in (2, 3):
+                pack = [ac1_list, ac2_list, inp_ver]
             json.dump(pack, filej)
         file_name = file.name
 
@@ -83,8 +87,11 @@ def save_file():
     file = file_name
     if file not in [None, '']:
         with open(file, "w") as filej:
-            data_package(3)
-            pack = [ac1_list, ac2_list, inp_ver]
+            data_package(now_pg)
+            if now_pg == 1:
+                pack = [ac1_list, [[[]]], inp_ver]
+            elif now_pg in (2, 3):
+                pack = [ac1_list, ac2_list, inp_ver]
             json.dump(pack, filej)
 
 
@@ -193,33 +200,37 @@ def win_1st():
 
     # дни и ночи для AC1
     global dlab_ac1, dtext_ac1, nlab_ac1, ntext_ac1, but_ac1, ogib1
-    dlab_ac1 = Label(window, text='Количество дней (АС1):', font=("Times", int(yax * 0.0205)))
-    dlab_ac1.place(relx=0.4, rely=0.15, anchor=CENTER)
+    dlab_ac1 = Label(window, text='Количество дней (АС1):', font=("Times", int(yax * 0.0245)))
+    dlab_ac1.place(relx=0.39, rely=0.15, anchor=CENTER)
     dtext_ac1 = Text(window, width=3, height=1)
-    dtext_ac1.place(relx=0.515, rely=0.15, anchor=CENTER)
-    dtext_ac1.configure(font=f'garamond {round(yax * 0.0175)}')
+    dtext_ac1.place(relx=0.52, rely=0.15, anchor=CENTER)
+    dtext_ac1.configure(font=f'garamond {round(yax * 0.0195)}')
     dtext_ac1.bind('<Key>', partial(check_keys, field=dtext_ac1))
 
-    nlab_ac1 = Label(window, text='и ночей (АС1):', font=("Times", int(yax * 0.0205)))
-    nlab_ac1.place(relx=0.6, rely=0.15, anchor=CENTER)
+    nlab_ac1 = Label(window, text='и ночей (АС1):', font=("Times", int(yax * 0.0245)))
+    nlab_ac1.place(relx=0.61, rely=0.15, anchor=CENTER)
     ntext_ac1 = Text(window, width=3, height=1)
-    ntext_ac1.place(relx=0.682, rely=0.15, anchor=CENTER)
-    ntext_ac1.configure(font=f'garamond {round(yax * 0.0175)}')
+    ntext_ac1.place(relx=0.7, rely=0.15, anchor=CENTER)
+    ntext_ac1.configure(font=f'garamond {round(yax * 0.0195)}')
     ntext_ac1.bind('<Key>', partial(check_keys, field=ntext_ac1))
 
     # кнопка для принятия количества дней
     ogib1 = Canvas(width=65, height=30)
     ogib1.place(relx=0.5, rely=0.215, anchor=CENTER)
-    but_ac1 = Button(ogib1, text="Принять", font=("Times", round(yax * 0.016)), bg='#D8D8D8',
+    but_ac1 = Button(ogib1, text="Принять", font=("Times", round(yax * 0.0165)), bg='#D8D8D8',
                      width=7, height=1, relief='groove', command=ac1_print)
     but_ac1.place(relx=0.5, rely=0.5, anchor=CENTER)
 
     window.after(800, update)
 
     # кнопка перехода ко второму окну
-    but_sec = Button(window, text="Далее", font=("Times", int(yax * 0.0178)), bg='#D8D8D8',
+    but_sec = Button(window, text="Далее", font=("Times", int(yax * 0.018)), bg='#D8D8D8',
                      width=10, height=1, relief='groove', command=partial(evaluate, page=1))
     but_sec.place(relx=0.5, rely=0.93, anchor=CENTER)
+
+    # текущая страница
+    global now_pg
+    now_pg = 1
 
 
 def win_2nd():
@@ -235,38 +246,42 @@ def win_2nd():
 
     # дни и ночи для AC2
     global dlab_ac2, dtext_ac2, nlab_ac2, ntext_ac2, but_ac2, ogib2
-    dlab_ac2 = Label(window, text='Количество дней (АС2):', font=("Times", int(yax * 0.0205)))
-    dlab_ac2.place(relx=0.4, rely=0.15, anchor=CENTER)
+    dlab_ac2 = Label(window, text='Количество дней (АС2):', font=("Times", int(yax * 0.0245)))
+    dlab_ac2.place(relx=0.39, rely=0.15, anchor=CENTER)
     dtext_ac2 = Text(window, width=3, height=1)
-    dtext_ac2.place(relx=0.515, rely=0.15, anchor=CENTER)
-    dtext_ac2.configure(font=f'garamond {round(yax * 0.0175)}')
+    dtext_ac2.place(relx=0.52, rely=0.15, anchor=CENTER)
+    dtext_ac2.configure(font=f'garamond {round(yax * 0.0195)}')
     dtext_ac2.bind('<Key>', partial(check_keys, field=dtext_ac2))
 
-    nlab_ac2 = Label(window, text='и ночей (АС2):', font=("Times", int(yax * 0.0205)))
-    nlab_ac2.place(relx=0.6, rely=0.15, anchor=CENTER)
+    nlab_ac2 = Label(window, text='и ночей (АС2):', font=("Times", int(yax * 0.0245)))
+    nlab_ac2.place(relx=0.61, rely=0.15, anchor=CENTER)
     ntext_ac2 = Text(window, width=3, height=1)
-    ntext_ac2.place(relx=0.682, rely=0.15, anchor=CENTER)
-    ntext_ac2.configure(font=f'garamond {round(yax * 0.0175)}')
+    ntext_ac2.place(relx=0.7, rely=0.15, anchor=CENTER)
+    ntext_ac2.configure(font=f'garamond {round(yax * 0.0195)}')
     ntext_ac2.bind('<Key>', partial(check_keys, field=ntext_ac2))
 
     # кнопка для принятия количества дней
     ogib2 = Canvas(width=65, height=30)
     ogib2.place(relx=0.5, rely=0.215, anchor=CENTER)
-    but_ac2 = Button(ogib2, text="Принять", font=("Times", round(yax * 0.016)), bg='#D8D8D8',
+    but_ac2 = Button(ogib2, text="Принять", font=("Times", round(yax * 0.0165)), bg='#D8D8D8',
                      width=7, height=1, relief='groove', command=ac2_print)
     but_ac2.place(relx=0.5, rely=0.5, anchor=CENTER)
 
     window.after(800, update)
 
     # кнопка перехода к третьему окну
-    but_sec = Button(window, text="Далее", font=("Times", int(yax * 0.0178)), bg='#D8D8D8',
+    but_sec = Button(window, text="Далее", font=("Times", int(yax * 0.018)), bg='#D8D8D8',
                      width=10, height=1, relief='groove', command=partial(evaluate, page=2))
     but_sec.place(relx=0.55, rely=0.93, anchor=CENTER)
 
     # кнопка для возвращения назад к первому окну
-    but_sec = Button(window, text="Назад", font=("Times", int(yax * 0.0178)), bg='#D8D8D8',
+    but_sec = Button(window, text="Назад", font=("Times", int(yax * 0.018)), bg='#D8D8D8',
                      width=10, height=1, relief='groove', command=partial(back, page=1))
     but_sec.place(relx=0.45, rely=0.93, anchor=CENTER)
+
+    # текущая страница
+    global now_pg
+    now_pg = 2
 
 
 def win_3rd():
@@ -336,6 +351,10 @@ def win_3rd():
                      width=10, height=1, relief='groove', command=partial(back, page=2))
     but_sec.place(relx=0.45, rely=0.93, anchor=CENTER)
 
+    # текущая страница
+    global now_pg
+    now_pg = 3
+
 
 def win_4th():
     """
@@ -395,7 +414,7 @@ def ac1_print():
             text2.bind('<Key>', partial(check_keys, field=text2))
             text3 = Text(f, width=3, height=1, bg='#f2f2f2')
             text3.place(relx=0.25 * (k + 1), rely=0.84, anchor=CENTER)
-            text3.configure(font=f'garamond {round(yax * 0.014)} bold', state=DISABLED, fg='red')
+            text3.configure(font=f'garamond {round(yax * 0.015)} bold', state=DISABLED, fg='#1aab6e')
             d_ac1.append((text1, text2, text3))
 
 
@@ -440,7 +459,7 @@ def ac2_print():
             text2.bind('<Key>', partial(check_keys, field=text2))
             text3 = Text(f, width=3, height=1, bg='#f2f2f2')
             text3.place(relx=0.25 * (k + 1), rely=0.84, anchor=CENTER)
-            text3.configure(font=f'garamond {round(yax * 0.014)} bold', state=DISABLED, fg='red')
+            text3.configure(font=f'garamond {round(yax * 0.015)} bold', state=DISABLED, fg='#1aab6e')
             d_ac2.append((text1, text2, text3))
 
 
@@ -473,7 +492,6 @@ def back(page):
             [[(x[0].insert(0.0, temp1[d_ac1.index(x)][0]), x[1].insert(0.0, temp1[d_ac1.index(x)][1]))
               for x in d_ac1[i:i + 3]] for i in range(0, len(d_ac1), 3)]
     if page == 2:
-        print(inp_ver)
         txts = ('dtext_ac2', 'ntext_ac2')
         [eval(f'{txts[x]}.insert(0.0, inp_ver[x+2])') for x in range(len(txts))]
 
@@ -504,7 +522,7 @@ def data_package(page):
             ac1_list = [[(x[0].get(0.0, END).strip(), x[1].get(0.0, END).strip()) for x in d_ac1[i:i + 3]]
                         for i in range(0, len(d_ac1), 3)]
             elements = (dtext_ac1, ntext_ac1)
-            if len(inp_ver) < 4:
+            if len(inp_ver) < 2:
                 inp_ver = [incorrect_input(x) for x in elements]
         else:
             ac1_list = [[[]]]
@@ -513,7 +531,7 @@ def data_package(page):
             ac2_list = [[(x[0].get(0.0, END).strip(), x[1].get(0.0, END).strip()) for x in d_ac2[i:i + 3]]
                         for i in range(0, len(d_ac2), 3)]
             elements = (dtext_ac2, ntext_ac2)
-            if len(inp_ver) < 7:
+            if len(inp_ver) < 4:
                 inp_ver = af_1 + [incorrect_input(x) for x in elements]
         else:
             ac2_list = [[[]]]
@@ -566,7 +584,6 @@ def evaluate(page):
     elif page == 3:
         if None in inp_ver:
             return
-        print(f'Результаты: {inp_ver}')
 
         # сохранение коэффициентов в yaml-файл
         if stav_d.get():
@@ -727,7 +744,6 @@ def prem_pers(tf):
         prem_n1 = [(i / 100) * ocl1 for i in pers]
         for i in range(3):
             ln = len(str(round(prem_n1[i], 2)).strip())
-            print(ln)
             if alt1[i] != 0:
                 parent.delete(alt1[i])
                 alt1[i] = parent.create_text(canx * 0.63 + canx * 0.01 * (ln-3), cany * rely,
