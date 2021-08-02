@@ -397,6 +397,9 @@ def ac1_print():
         if i in [10, 20, 30]:
             rs += 1
             cs -= 10
+        # m = Canvas(frame_d1, width=xax * 0.01, height=yax * 0.16,
+        #            highlightthickness=0.5, highlightbackground="black", bg='#dedede')
+        # m.place(relx=0.05, rely=0.4 + 10 * i, anchor=CENTER)
         f = Canvas(frame_d1, width=xax * 0.09, height=yax * 0.16,
                    highlightthickness=0.5, highlightbackground="black", bg='#dedede')
         f.grid(row=rs, column=cs + i, sticky='e', padx=1, pady=5)
