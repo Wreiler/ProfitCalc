@@ -365,7 +365,7 @@ def win_4th():
 
     res = Label(window, text='РЕЗУЛЬТАТЫ:', font=("Times", int(yax * 0.036)),
                 bg='#dbdbdb', bd=3, relief='raised')
-    res.place(relx=0.5, rely=0.03, anchor=CENTER)
+    res.place(relx=0.5, rely=0.05, anchor=CENTER)
 
     but_back = Button(window, text="Назад", font=("Times", int(yax * 0.0178)), bg='#D8D8D8',
                       width=10, height=1, relief='groove', command=partial(back, page=3))
@@ -636,8 +636,8 @@ def calculation(days_ac1, days_ac2, fields):
     # результаты для AC1
     canx, cany = (xax * 0.5) - 30, yax * 0.5
     res_ac1 = Canvas(width=canx, height=cany, bg='#e0e0e0', highlightthickness=1, highlightbackground="black")
-    res_ac1.place(relx=0.255, rely=0.33, anchor=CENTER)
-    res_ac1.create_text(canx * 0.5, cany * 0.05, text='AC1', font=("Times", int(yax * 0.0255)), fill='#870909')
+    res_ac1.place(relx=0.255, rely=0.35, anchor=CENTER)
+    res_ac1.create_text(canx * 0.5, cany * 0.065, text='AC1', font=("Times", int(yax * 0.0265), 'bold'), fill='#2a7485')
     ocl1 = fields[-2] * hours * fields[0]
     res_ac1.create_text(canx * 0.5, cany * 0.2, text=f'Оклад:  {round(ocl1, 2)}  руб.',
                         font=("Times", int(yax * 0.0225)))
@@ -675,8 +675,8 @@ def calculation(days_ac1, days_ac2, fields):
     # результаты для AC2
     res_ac2 = Canvas(width=(xax // 2) - 30, height=yax // 2, bg='#e0e0e0', highlightthickness=1,
                      highlightbackground="black")
-    res_ac2.place(relx=0.745, rely=0.33, anchor=CENTER)
-    res_ac2.create_text(canx * 0.5, cany * 0.05, text='AC2', font=("Times", int(yax * 0.0255)), fill='#870909')
+    res_ac2.place(relx=0.745, rely=0.35, anchor=CENTER)
+    res_ac2.create_text(canx * 0.5, cany * 0.065, text='AC2', font=("Times", int(yax * 0.0265), 'bold'), fill='#2a7485')
     ocl2 = fields[-2] * hours * fields[2] / 2
     res_ac2.create_text(canx * 0.5, cany * 0.2, text=f'Оклад:  {round(ocl2, 2)}  руб.',
                         font=("Times", int(yax * 0.0225)))
@@ -713,17 +713,17 @@ def calculation(days_ac1, days_ac2, fields):
 
     # линии для разделения
     line_ver = Canvas(width=xax // 100, height=yax // 2)
-    line_ver.place(relx=0.5, rely=0.33, anchor=CENTER)
-    line_ver.create_line(xax // 150, 0, xax // 150, yax // 2, fill='#a34e4e', width=3)
+    line_ver.place(relx=0.5, rely=0.35, anchor=CENTER)
+    line_ver.create_line(xax // 150, 0, xax // 150, yax // 2 + 40, fill='#1aab6e', width=3)
     line_hor = Canvas(width=xax - 45, height=yax // 170)
-    line_hor.place(relx=0.5, rely=0.59, anchor=CENTER)
-    line_hor.create_line(0, yax // 255, xax, yax // 255, fill='#a34e4e', width=3)
+    line_hor.place(relx=0.5, rely=0.62, anchor=CENTER)
+    line_hor.create_line(0, yax // 255, xax, yax // 255, fill='#1aab6e', width=3)
 
     # итоговые результаты
     global totx, toty, res_tot
-    totx, toty = xax // 1.5, yax // 3.5
-    res_tot = Canvas(width=totx, height=toty, bg='#e0e0e0', highlightthickness=1, highlightbackground="black")
-    res_tot.place(relx=0.5, rely=0.74, anchor=CENTER)
+    totx, toty = xax // 1.6, yax // 4
+    res_tot = Canvas(width=totx, height=toty, bg='#e0e0e0', highlightthickness=3, highlightbackground="#2a7485")
+    res_tot.place(relx=0.5, rely=0.76, anchor=CENTER)
 
     prem_pers([per_text1_1, per_text1_2, per_text1_3])
     prem_pers([per_text2_1, per_text2_2, per_text2_3])
@@ -782,7 +782,7 @@ def prem_pers(tf):
     res_tot.create_text(totx * 0.5, toty * 0.59, text=f'Аванс:  {inp_ver[4]}  руб.',
                         font=("Times", int(yax * 0.0225)))
     res_tot.create_text(totx * 0.5, toty * 0.81, text=f'Сумма на руки:  {round(sum_res_per - inp_ver[4], 2)}  руб.',
-                        font=("Times", int(yax * 0.0225), 'bold'))
+                        font=("Times", int(yax * 0.024), 'bold'))
 
 
 # ФУНКЦИИ ПРОВЕРКИ И ВЫДЕЛЕНИЯ ОШИБОК ПРОГРАММЫ
