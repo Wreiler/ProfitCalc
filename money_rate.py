@@ -7,6 +7,7 @@ from functools import partial
 import json
 import datetime
 from yaml import safe_load, dump
+from idlelib.tooltip import Hovertip
 
 
 # Для вывода иконки в панель задач
@@ -399,12 +400,21 @@ def ac1_print():
             cs -= 10
         m = Canvas(frame_d1, width=xax * 0.02, height=yax * 0.16)
         m.grid(row=rs, column=1, sticky='e', padx=0.5, pady=5)
-        m.create_text(xax * 0.02 * 0.5, yax * 0.16 * 0.42, text='П',
-                      font=("garamond", int(yax * 0.019), 'bold'))
-        m.create_text(xax * 0.02 * 0.5, yax * 0.16 * 0.6, text='В',
-                      font=("garamond", int(yax * 0.019), 'bold'))
-        m.create_text(xax * 0.02 * 0.5, yax * 0.16 * 0.86, text='%',
-                      font=("garamond", int(yax * 0.019), 'bold'))
+
+        p_let = Button(m, text="П", font=("garamond", int(yax * 0.016), 'bold'), fg='#2a7485',
+                       width=1, height=1, relief=GROOVE, justify=CENTER, state=DISABLED, borderwidth=0)
+        p_let.place(relx=0.5, rely=0.4, anchor=CENTER)
+        v_let = Button(m, text="В", font=("garamond", int(yax * 0.016), 'bold'), fg='#2a7485',
+                       width=1, height=1, relief=GROOVE, justify=CENTER, state=DISABLED, borderwidth=0)
+        v_let.place(relx=0.55, rely=0.57, anchor=CENTER)
+        pers_let = Button(m, text="%", font=("garamond", int(yax * 0.016), 'bold'), fg='#2a7485',
+                       width=1, height=1, relief=GROOVE, justify=CENTER, state=DISABLED, borderwidth=0)
+        pers_let.place(relx=0.53, rely=0.82, anchor=CENTER)
+
+        Hovertip(p_let, 'П - плановое количество коробок', hover_delay=100)
+        Hovertip(v_let, 'В - количество выполненных коробок', hover_delay=100)
+        Hovertip(pers_let, '% - соотношение выполненных к плановым', hover_delay=100)
+
         f = Canvas(frame_d1, width=xax * 0.09, height=yax * 0.16,
                    highlightthickness=0.5, highlightbackground="black", bg='#dedede')
         f.grid(row=rs, column=cs + i, sticky='e', padx=1, pady=5)
@@ -445,11 +455,28 @@ def ac2_print():
     frame_d2 = Canvas(width=xax - 10, height=yax * 0.068 * (days // 10 if days % 10 == 0 else (days // 10) + 1),
                       highlightthickness=0)
     frame_d2.place(relx=0.5, rely=0.265, anchor='n')
-    rs, cs = 1, 1
+    rs, cs = 1, 2
     for i in range(days):
         if i in [10, 20, 30]:
             rs += 1
             cs -= 10
+        m = Canvas(frame_d2, width=xax * 0.02, height=yax * 0.16)
+        m.grid(row=rs, column=1, sticky='e', padx=0.5, pady=5)
+
+        p_let = Button(m, text="П", font=("garamond", int(yax * 0.016), 'bold'), fg='#2a7485',
+                       width=1, height=1, relief=GROOVE, justify=CENTER, state=DISABLED, borderwidth=0)
+        p_let.place(relx=0.5, rely=0.4, anchor=CENTER)
+        v_let = Button(m, text="В", font=("garamond", int(yax * 0.016), 'bold'), fg='#2a7485',
+                       width=1, height=1, relief=GROOVE, justify=CENTER, state=DISABLED, borderwidth=0)
+        v_let.place(relx=0.55, rely=0.57, anchor=CENTER)
+        pers_let = Button(m, text="%", font=("garamond", int(yax * 0.016), 'bold'), fg='#2a7485',
+                          width=1, height=1, relief=GROOVE, justify=CENTER, state=DISABLED, borderwidth=0)
+        pers_let.place(relx=0.53, rely=0.82, anchor=CENTER)
+
+        Hovertip(p_let, 'П - плановое количество коробок', hover_delay=100)
+        Hovertip(v_let, 'В - количество выполненных коробок', hover_delay=100)
+        Hovertip(pers_let, '% - соотношение выполненных к плановым', hover_delay=100)
+
         f = Canvas(frame_d2, width=xax * 0.09, height=yax * 0.16,
                    highlightthickness=0.5, highlightbackground="black", bg='#dedede')
         f.grid(row=rs, column=cs + i, sticky='e', padx=1, pady=5)
