@@ -392,14 +392,19 @@ def ac1_print():
     frame_d1 = Canvas(width=xax - 10, height=yax * 0.068 * (days // 10 if days % 10 == 0 else (days // 10) + 1),
                       highlightthickness=0, selectborderwidth=3)
     frame_d1.place(relx=0.5, rely=0.265, anchor='n')
-    rs, cs = 1, 1
+    rs, cs = 1, 2
     for i in range(days):
         if i in [10, 20, 30]:
             rs += 1
             cs -= 10
-        # m = Canvas(frame_d1, width=xax * 0.01, height=yax * 0.16,
-        #            highlightthickness=0.5, highlightbackground="black", bg='#dedede')
-        # m.place(relx=0.05, rely=0.4 + 10 * i, anchor=CENTER)
+        m = Canvas(frame_d1, width=xax * 0.02, height=yax * 0.16)
+        m.grid(row=rs, column=1, sticky='e', padx=0.5, pady=5)
+        m.create_text(xax * 0.02 * 0.5, yax * 0.16 * 0.42, text='П',
+                      font=("garamond", int(yax * 0.019), 'bold'))
+        m.create_text(xax * 0.02 * 0.5, yax * 0.16 * 0.6, text='В',
+                      font=("garamond", int(yax * 0.019), 'bold'))
+        m.create_text(xax * 0.02 * 0.5, yax * 0.16 * 0.86, text='%',
+                      font=("garamond", int(yax * 0.019), 'bold'))
         f = Canvas(frame_d1, width=xax * 0.09, height=yax * 0.16,
                    highlightthickness=0.5, highlightbackground="black", bg='#dedede')
         f.grid(row=rs, column=cs + i, sticky='e', padx=1, pady=5)
