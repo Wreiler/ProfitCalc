@@ -44,7 +44,7 @@ def about():
     Функция для вывода справки из меню программы
     """
 
-    showinfo("Справка", "Программа для расчета оклада труда.\nВерсия 1.0\n\nby Wreiler")
+    showinfo("Справка", "Программа для расчета оклада труда.\nВерсия 2.0\n\nby Wreiler")
 
 
 def open_file():
@@ -398,6 +398,8 @@ def ac1_print():
         if i in [10, 20, 30]:
             rs += 1
             cs -= 10
+
+        # обозначения для полей ввода коробок
         m = Canvas(frame_d1, width=xax * 0.02, height=yax * 0.16)
         m.grid(row=rs, column=1, sticky='e', padx=0.5, pady=5)
 
@@ -460,6 +462,8 @@ def ac2_print():
         if i in [10, 20, 30]:
             rs += 1
             cs -= 10
+
+        # обозначения для полей ввода коробок
         m = Canvas(frame_d2, width=xax * 0.02, height=yax * 0.16)
         m.grid(row=rs, column=1, sticky='e', padx=0.5, pady=5)
 
