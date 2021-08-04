@@ -55,10 +55,10 @@ def open_file():
     global file_name, ac1_list, ac2_list, inp_ver
     file = askopenfile()
     if file:
+        file_name = file.name
         with open(file.name, 'r') as filej:
             ac1_list, ac2_list, inp_ver = json.load(filej)
         back(1)
-        file_name = file.name
 
 
 def save_as_file():
@@ -70,6 +70,7 @@ def save_as_file():
     now = datetime.datetime.now()
     file = asksaveasfile(defaultextension=".json", initialfile=f'Расчет от {now.strftime("%d-%m-%Y")}')
     if file:
+        file_name = file.name
         with open(file.name, 'w') as filej:
             data_package(now_pg)
             if now_pg == 1:
@@ -77,7 +78,6 @@ def save_as_file():
             elif now_pg in (2, 3):
                 pack = [ac1_list, ac2_list, inp_ver]
             json.dump(pack, filej)
-        file_name = file.name
 
 
 def save_file():
@@ -85,6 +85,7 @@ def save_file():
     Функция для сохранения текущего файла из меню программы
     """
 
+    global file_name
     file = file_name
     if file not in [None, '']:
         with open(file, "w") as filej:
@@ -323,6 +324,8 @@ def win_3rd():
     ch_day = Checkbutton(text='', variable=stav_d, command=partial(ch_but, 0), takefocus=0)
     ch_day.place(relx=0.635, rely=0.44, anchor=CENTER)
     stav_d.set(True)
+    Hovertip(ch_day, 'При активном режиме - значение перезаписывается в файл coefs.yaml\n'
+                     'При неактивном режиме - значение используется лишь для текущего расчета', hover_delay=100)
 
     # ставка в час для ночи
     global st_nig_lab, st_nig_t, stav_n
@@ -341,6 +344,8 @@ def win_3rd():
     ch_nig = Checkbutton(text='', variable=stav_n, command=partial(ch_but, 1), takefocus=0)
     ch_nig.place(relx=0.635, rely=0.62, anchor=CENTER)
     stav_n.set(True)
+    Hovertip(ch_nig, 'При активном режиме - значение перезаписывается в файл coefs.yaml\n'
+                     'При неактивном режиме - значение используется лишь для текущего расчета', hover_delay=100)
 
     # кнопка для вычисления и перехода к четвертому окну
     but_culc = Button(window, text="Вычислить", font=("Times", int(yax * 0.0178), 'bold'), bg='#D8D8D8',
@@ -371,6 +376,10 @@ def win_4th():
     but_back = Button(window, text="Назад", font=("Times", int(yax * 0.0178)), bg='#D8D8D8',
                       width=10, height=1, relief='groove', command=partial(back, page=3))
     but_back.place(relx=0.5, rely=0.93, anchor=CENTER)
+
+    # текущая страница
+    global now_pg
+    now_pg = 3
 
 
 def ac1_print():
@@ -518,11 +527,14 @@ def back(page):
         win_3rd()
 
     # обработка значений из "памяти ввода"
+    global inp_ver
     if page == 1:
         global d_ac2
         d_ac2 = []
         txts = ('dtext_ac1', 'ntext_ac1')
         [eval(f'{txts[x]}.insert(0.0, inp_ver[x])') for x in range(len(txts))]
+        if file_name == '':
+            inp_ver = []
 
         # вставка значений в поля на свои места
         if ac1_list != [[[]]]:
@@ -533,6 +545,8 @@ def back(page):
     if page == 2:
         txts = ('dtext_ac2', 'ntext_ac2')
         [eval(f'{txts[x]}.insert(0.0, inp_ver[x+2])') for x in range(len(txts))]
+        if file_name == '':
+            inp_ver = inp_ver[:2]
 
         # вставка значений в поля на свои места
         if ac2_list != [[[]]]:
@@ -547,6 +561,8 @@ def back(page):
         [eval(f'{sts[x]}.delete(0.0, END)') for x in range(len(sts))]
         [eval(f'{sts[x]}.insert(0.0, inp_ver[x+5])') for x in range(len(sts))]
         [eval(f'{sts[x]}.configure(state=DISABLED)') for x in range(len(sts))]
+        if file_name == '':
+            inp_ver = inp_ver[:4]
 
 
 # ФУНКЦИИ ВЫЧИСЛЕНИЙ И ОБРАБОТКИ РЕЗУЛЬТАТОВ ПРОГРАММЫ
@@ -561,8 +577,12 @@ def data_package(page):
             ac1_list = [[(x[0].get(0.0, END).strip(), x[1].get(0.0, END).strip()) for x in d_ac1[i:i + 3]]
                         for i in range(0, len(d_ac1), 3)]
             elements = (dtext_ac1, ntext_ac1)
-            if len(inp_ver) < 2:
-                inp_ver = [incorrect_input(x) for x in elements]
+            res = [incorrect_input(x) for x in elements]
+            print(inp_ver)
+            if len(inp_ver) < 2 or None in inp_ver:
+                inp_ver = res
+            if res != inp_ver[:2]:
+                inp_ver[:2] = res
         else:
             ac1_list = [[[]]]
     elif page == 2:
@@ -570,15 +590,20 @@ def data_package(page):
             ac2_list = [[(x[0].get(0.0, END).strip(), x[1].get(0.0, END).strip()) for x in d_ac2[i:i + 3]]
                         for i in range(0, len(d_ac2), 3)]
             elements = (dtext_ac2, ntext_ac2)
-            if len(inp_ver) < 4:
-                inp_ver = af_1 + [incorrect_input(x) for x in elements]
+            res = [incorrect_input(x) for x in elements]
+            if len(inp_ver) < 4 or None in inp_ver:
+                inp_ver = af_1 + res
+            if res != inp_ver[2:4]:
+                inp_ver[2:4] = res
         else:
             ac2_list = [[[]]]
     elif page == 3:
         elements = (text_ava, st_day_t, st_nig_t)
-        if len(inp_ver) < 7:
-            inp_ver = af_2 + [incorrect_input(x, 'fl') if x in (st_day_t, st_nig_t)
-                              else incorrect_input(x) for x in elements]
+        res = [incorrect_input(x, 'fl') if x in (st_day_t, st_nig_t) else incorrect_input(x) for x in elements]
+        if len(inp_ver) < 7 or None in inp_ver:
+            inp_ver = af_2 + res
+        if res != inp_ver[4:]:
+            inp_ver[4:] = res
 
 
 def evaluate(page):
