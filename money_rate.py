@@ -7,6 +7,7 @@ from functools import partial
 import json
 import datetime
 from yaml import safe_load, dump
+from idlelib.tooltip import Hovertip
 
 
 # Для вывода иконки в панель задач
@@ -33,6 +34,8 @@ hours = 11.3  # - часы работы
 file_name = ''  # - default для имени файла
 alt1, alt2 = [0, 0, 0], [0, 0, 0]  # - контейнеры окон для ввода процентов n-% премии
 prem_n1, prem_n2 = [], []  # - контейнеры для всех n-% премий
+inp_ver = []  # - контейнер для вставляемых значений
+now_pg = 0  # - номер текущей страницы
 
 
 # ФУНКЦИИ МЕНЮ ПРОГРАММЫ
@@ -41,7 +44,7 @@ def about():
     Функция для вывода справки из меню программы
     """
 
-    showinfo("Справка", "Программа для расчета оклада труда.\nВерсия 1.0\n\nby Wreiler")
+    showinfo("Справка", "Программа для расчета оклада труда.\nВерсия 2.0\n\nby Wreiler")
 
 
 def open_file():
@@ -52,10 +55,10 @@ def open_file():
     global file_name, ac1_list, ac2_list, inp_ver
     file = askopenfile()
     if file:
+        file_name = file.name
         with open(file.name, 'r') as filej:
             ac1_list, ac2_list, inp_ver = json.load(filej)
-        back()
-        file_name = file.name
+        back(1)
 
 
 def save_as_file():
@@ -67,11 +70,14 @@ def save_as_file():
     now = datetime.datetime.now()
     file = asksaveasfile(defaultextension=".json", initialfile=f'Расчет от {now.strftime("%d-%m-%Y")}')
     if file:
-        with open(file.name, 'w') as filej:
-            data_package()
-            pack = [ac1_list, ac2_list, inp_ver]
-            json.dump(pack, filej)
         file_name = file.name
+        with open(file.name, 'w') as filej:
+            data_package(now_pg)
+            if now_pg == 1:
+                pack = [ac1_list, [[[]]], inp_ver]
+            elif now_pg in (2, 3):
+                pack = [ac1_list, ac2_list, inp_ver]
+            json.dump(pack, filej)
 
 
 def save_file():
@@ -79,11 +85,15 @@ def save_file():
     Функция для сохранения текущего файла из меню программы
     """
 
+    global file_name
     file = file_name
     if file not in [None, '']:
         with open(file, "w") as filej:
-            data_package()
-            pack = [ac1_list, ac2_list, inp_ver]
+            data_package(now_pg)
+            if now_pg == 1:
+                pack = [ac1_list, [[[]]], inp_ver]
+            elif now_pg in (2, 3):
+                pack = [ac1_list, ac2_list, inp_ver]
             json.dump(pack, filej)
 
 
@@ -120,7 +130,7 @@ def new_file():
         save_as_file()
     for x in window.winfo_children():
         x.destroy()
-    win_one()
+    win_1st()
     file_name = ''
 
 
@@ -150,124 +160,226 @@ def make_menu(n):
     hm.add_command(label="Справка", command=about)
 
 
-# ФУНКЦИИ ОТОБРАЖЕНИЯ ОСНОВНЫХ ОКОН И ПОЛЕЙ ПРОГРАММЫ
-def win_one():
+def update():
     """
-    Функция для отображения полей и элементов первого окна программы (окна ввода)
+    Функция для обновления окна программы и пересчета процентов выполненных коробок
+    """
+
+    if d_ac1:
+        for i in d_ac1:
+            i[2].config(state=NORMAL)
+            try:
+                i[2].delete(1.0, END)
+                i[2].insert(0.0, round((int(i[1].get(0.0, END))/int(i[0].get(0.0, END)))*100))
+            except:
+                i[2].delete(1.0, END)
+                i[2].insert(0.0, 0)
+            i[2].config(state=DISABLED)
+    if d_ac2:
+        for i in d_ac2:
+            i[2].config(state=NORMAL)
+            try:
+                i[2].delete(1.0, END)
+                i[2].insert(0.0, round((int(i[1].get(0.0, END))/int(i[0].get(0.0, END)))*100))
+            except:
+                i[2].delete(1.0, END)
+                i[2].insert(0.0, 0)
+            i[2].config(state=DISABLED)
+    window.after(800, update)
+
+
+# ФУНКЦИИ ОТОБРАЖЕНИЯ ОСНОВНЫХ ОКОН И ПОЛЕЙ ПРОГРАММЫ
+def win_1st():
+    """
+    Функция для отображения полей и элементов первого окна программы (ввод данных для AC1)
     """
 
     make_menu(1)
 
+    letter = Label(window, text='ВХОДНЫЕ ДАННЫЕ ДЛЯ АС1:', font=("Times", int(yax * 0.036)),
+                   bg='#dbdbdb', bd=3, relief='raised')
+    letter.place(relx=0.5, rely=0.05, anchor=CENTER)
+
     # дни и ночи для AC1
     global dlab_ac1, dtext_ac1, nlab_ac1, ntext_ac1, but_ac1, ogib1
-    dlab_ac1 = Label(window, text='Количество дней (АС1):', font=("Times", int(yax * 0.0205)))
-    dlab_ac1.place(relx=0.4, rely=0.05, anchor=CENTER)
+    dlab_ac1 = Label(window, text='Количество дней (АС1):', font=("Times", int(yax * 0.0245)))
+    dlab_ac1.place(relx=0.39, rely=0.15, anchor=CENTER)
     dtext_ac1 = Text(window, width=3, height=1)
-    dtext_ac1.place(relx=0.515, rely=0.05, anchor=CENTER)
-    dtext_ac1.configure(font=f'garamond {round(yax * 0.0175)}')
+    dtext_ac1.place(relx=0.52, rely=0.15, anchor=CENTER)
+    dtext_ac1.configure(font=f'garamond {round(yax * 0.0195)}')
     dtext_ac1.bind('<Key>', partial(check_keys, field=dtext_ac1))
 
-    nlab_ac1 = Label(window, text='и ночей (АС1):', font=("Times", int(yax * 0.0205)))
-    nlab_ac1.place(relx=0.6, rely=0.05, anchor=CENTER)
+    nlab_ac1 = Label(window, text='и ночей (АС1):', font=("Times", int(yax * 0.0245)))
+    nlab_ac1.place(relx=0.61, rely=0.15, anchor=CENTER)
     ntext_ac1 = Text(window, width=3, height=1)
-    ntext_ac1.place(relx=0.682, rely=0.05, anchor=CENTER)
-    ntext_ac1.configure(font=f'garamond {round(yax * 0.0175)}')
+    ntext_ac1.place(relx=0.7, rely=0.15, anchor=CENTER)
+    ntext_ac1.configure(font=f'garamond {round(yax * 0.0195)}')
     ntext_ac1.bind('<Key>', partial(check_keys, field=ntext_ac1))
 
     # кнопка для принятия количества дней
     ogib1 = Canvas(width=65, height=30)
-    ogib1.place(relx=0.5, rely=0.105, anchor=CENTER)
-    but_ac1 = Button(ogib1, text="Принять", font=("Times", round(yax * 0.014)), bg='#D8D8D8',
+    ogib1.place(relx=0.5, rely=0.215, anchor=CENTER)
+    but_ac1 = Button(ogib1, text="Принять", font=("Times", round(yax * 0.0165)), bg='#D8D8D8',
                      width=7, height=1, relief='groove', command=ac1_print)
     but_ac1.place(relx=0.5, rely=0.5, anchor=CENTER)
 
+    window.after(800, update)
+
+    # кнопка перехода ко второму окну
+    but_sec = Button(window, text="Далее", font=("Times", int(yax * 0.018)), bg='#D8D8D8',
+                     width=10, height=1, relief='groove', command=partial(evaluate, page=1))
+    but_sec.place(relx=0.5, rely=0.93, anchor=CENTER)
+
+    # текущая страница
+    global now_pg
+    now_pg = 1
+
+
+def win_2nd():
+    """
+    Функция для отображения полей и элементов второго окна программы (ввод данных для AC2)
+    """
+
+    make_menu(1)
+
+    letter = Label(window, text='ВХОДНЫЕ ДАННЫЕ ДЛЯ АС2:', font=("Times", int(yax * 0.036)),
+                   bg='#dbdbdb', bd=3, relief='raised')
+    letter.place(relx=0.5, rely=0.05, anchor=CENTER)
+
     # дни и ночи для AC2
     global dlab_ac2, dtext_ac2, nlab_ac2, ntext_ac2, but_ac2, ogib2
-    dlab_ac2 = Label(window, text='Количество дней (АС2):', font=("Times", int(yax * 0.0205)))
-    dlab_ac2.place(relx=0.4, rely=0.44, anchor=CENTER)
+    dlab_ac2 = Label(window, text='Количество дней (АС2):', font=("Times", int(yax * 0.0245)))
+    dlab_ac2.place(relx=0.39, rely=0.15, anchor=CENTER)
     dtext_ac2 = Text(window, width=3, height=1)
-    dtext_ac2.place(relx=0.515, rely=0.44, anchor=CENTER)
-    dtext_ac2.configure(font=f'garamond {round(yax * 0.0175)}')
+    dtext_ac2.place(relx=0.52, rely=0.15, anchor=CENTER)
+    dtext_ac2.configure(font=f'garamond {round(yax * 0.0195)}')
     dtext_ac2.bind('<Key>', partial(check_keys, field=dtext_ac2))
 
-    nlab_ac2 = Label(window, text='и ночей (АС2):', font=("Times", int(yax * 0.0205)))
-    nlab_ac2.place(relx=0.6, rely=0.44, anchor=CENTER)
+    nlab_ac2 = Label(window, text='и ночей (АС2):', font=("Times", int(yax * 0.0245)))
+    nlab_ac2.place(relx=0.61, rely=0.15, anchor=CENTER)
     ntext_ac2 = Text(window, width=3, height=1)
-    ntext_ac2.place(relx=0.682, rely=0.44, anchor=CENTER)
-    ntext_ac2.configure(font=f'garamond {round(yax * 0.0175)}')
+    ntext_ac2.place(relx=0.7, rely=0.15, anchor=CENTER)
+    ntext_ac2.configure(font=f'garamond {round(yax * 0.0195)}')
     ntext_ac2.bind('<Key>', partial(check_keys, field=ntext_ac2))
 
     # кнопка для принятия количества дней
     ogib2 = Canvas(width=65, height=30)
-    ogib2.place(relx=0.4995, rely=0.495, anchor=CENTER)
-    but_ac2 = Button(ogib2, text="Принять", font=("Times", round(yax * 0.014)), bg='#D8D8D8',
+    ogib2.place(relx=0.5, rely=0.215, anchor=CENTER)
+    but_ac2 = Button(ogib2, text="Принять", font=("Times", round(yax * 0.0165)), bg='#D8D8D8',
                      width=7, height=1, relief='groove', command=ac2_print)
     but_ac2.place(relx=0.5, rely=0.5, anchor=CENTER)
 
+    window.after(800, update)
+
+    # кнопка перехода к третьему окну
+    but_sec = Button(window, text="Далее", font=("Times", int(yax * 0.018)), bg='#D8D8D8',
+                     width=10, height=1, relief='groove', command=partial(evaluate, page=2))
+    but_sec.place(relx=0.55, rely=0.93, anchor=CENTER)
+
+    # кнопка для возвращения назад к первому окну
+    but_sec = Button(window, text="Назад", font=("Times", int(yax * 0.018)), bg='#D8D8D8',
+                     width=10, height=1, relief='groove', command=partial(back, page=1))
+    but_sec.place(relx=0.45, rely=0.93, anchor=CENTER)
+
+    # текущая страница
+    global now_pg
+    now_pg = 2
+
+
+def win_3rd():
+    """
+    Функция для отображения полей и элементов третьего окна программы (ввод данных для аванса и ставок)
+    """
+
+    make_menu(1)
+
+    letter = Label(window, text='ВХОДНЫЕ ДАННЫЕ ДЛЯ АВАНСА И СТАВОК:', font=("Times", int(yax * 0.036)),
+                   bg='#dbdbdb', bd=3, relief='raised')
+    letter.place(relx=0.5, rely=0.05, anchor=CENTER)
+
     # аванс
     global lab_ava, text_ava
-    lab_ava = Label(window, text='Аванс:', font=("Times", int(yax * 0.0205)))
-    lab_ava.place(relx=0.23, rely=0.84, anchor=CENTER)
+    lab_ava = Label(window, text='Аванс:', font=("Times", int(yax * 0.0245)))
+    lab_ava.place(relx=0.45, rely=0.26, anchor=CENTER)
 
     text_ava = Text(window, width=8, height=1)
-    text_ava.place(relx=0.3, rely=0.84, anchor=CENTER)
-    text_ava.configure(font=f'garamond {round(yax * 0.0175)}')
+    text_ava.place(relx=0.53, rely=0.26, anchor=CENTER)
+    text_ava.configure(font=f'garamond {round(yax * 0.0195)}')
     text_ava.bind('<Key>', partial(check_keys, field=text_ava))
 
     # ставка в час для дня
     global st_day_lab, st_day_t, stav_d
-    st_day_lab = Label(window, text='Ставка в час (день):', font=("Times", int(yax * 0.0205)))
-    st_day_lab.place(relx=0.41, rely=0.84, anchor=CENTER)
+    st_day_lab = Label(window, text='Ставка в час (день):', font=("Times", int(yax * 0.0245)))
+    st_day_lab.place(relx=0.44, rely=0.44, anchor=CENTER)
 
     # поле для ставки для дня и управление им
     st_day_t = Text(window, width=8, height=1)
-    st_day_t.place(relx=0.52, rely=0.84, anchor=CENTER)
-    st_day_t.configure(font=f'garamond {round(yax * 0.0175)}', bg='#f2f2f2')
+    st_day_t.place(relx=0.58, rely=0.44, anchor=CENTER)
+    st_day_t.configure(font=f'garamond {round(yax * 0.0195)}', bg='#f2f2f2')
     st_day_t.bind('<Key>', partial(check_keys, field=st_day_t))
     st_day_t.insert(0.0, std)
     st_day_t.configure(state=DISABLED)
 
     stav_d = BooleanVar()
     ch_day = Checkbutton(text='', variable=stav_d, command=partial(ch_but, 0), takefocus=0)
-    ch_day.place(relx=0.57, rely=0.84, anchor=CENTER)
+    ch_day.place(relx=0.635, rely=0.44, anchor=CENTER)
     stav_d.set(True)
+    Hovertip(ch_day, 'При активном режиме - значение перезаписывается в файл coefs.yaml\n'
+                     'При неактивном режиме - значение используется лишь для текущего расчета', hover_delay=100)
 
     # ставка в час для ночи
     global st_nig_lab, st_nig_t, stav_n
-    st_nig_lab = Label(window, text='Ставка в час (ночь):', font=("Times", int(yax * 0.0205)))
-    st_nig_lab.place(relx=0.66, rely=0.84, anchor=CENTER)
+    st_nig_lab = Label(window, text='Ставка в час (ночь):', font=("Times", int(yax * 0.0245)))
+    st_nig_lab.place(relx=0.44, rely=0.62, anchor=CENTER)
 
     # поле для ставки для ночи и управление им
     st_nig_t = Text(window, width=8, height=1)
-    st_nig_t.place(relx=0.77, rely=0.84, anchor=CENTER)
-    st_nig_t.configure(font=f'garamond {round(yax * 0.0175)}', bg='#f2f2f2')
+    st_nig_t.place(relx=0.58, rely=0.62, anchor=CENTER)
+    st_nig_t.configure(font=f'garamond {round(yax * 0.0195)}', bg='#f2f2f2')
     st_nig_t.bind('<Key>', partial(check_keys, field=st_nig_t))
     st_nig_t.insert(0.0, stn)
     st_nig_t.configure(state=DISABLED)
 
     stav_n = BooleanVar()
     ch_nig = Checkbutton(text='', variable=stav_n, command=partial(ch_but, 1), takefocus=0)
-    ch_nig.place(relx=0.82, rely=0.84, anchor=CENTER)
+    ch_nig.place(relx=0.635, rely=0.62, anchor=CENTER)
     stav_n.set(True)
+    Hovertip(ch_nig, 'При активном режиме - значение перезаписывается в файл coefs.yaml\n'
+                     'При неактивном режиме - значение используется лишь для текущего расчета', hover_delay=100)
 
-    # кнопка для вычисления и перехода ко второму окну
-    but_culc = Button(window, text="Вычислить", font=("Times", int(yax * 0.0188)), bg='#D8D8D8',
-                      width=10, height=1, relief='groove', command=evaluate)
-    but_culc.place(relx=0.5, rely=0.93, anchor=CENTER)
+    # кнопка для вычисления и перехода к четвертому окну
+    but_culc = Button(window, text="Вычислить", font=("Times", int(yax * 0.0178), 'bold'), bg='#D8D8D8',
+                      width=10, height=1, relief='groove', command=partial(evaluate, 3))
+    but_culc.place(relx=0.55, rely=0.93, anchor=CENTER)
+
+    # кнопка для возвращения назад ко второму окну
+    but_sec = Button(window, text="Назад", font=("Times", int(yax * 0.0178)), bg='#D8D8D8',
+                     width=10, height=1, relief='groove', command=partial(back, page=2))
+    but_sec.place(relx=0.45, rely=0.93, anchor=CENTER)
+
+    # текущая страница
+    global now_pg
+    now_pg = 3
 
 
-def win_sec():
+def win_4th():
     """
-    Функция для отображения полей и элементов второго окна программы (окна результатов)
+    Функция для отображения полей и элементов четвертого окна программы (окна результатов)
     """
 
     make_menu(2)
 
-    res = Label(window, text='Результаты', font=("Times", int(yax * 0.0305)))
-    res.place(relx=0.5, rely=0.04, anchor=CENTER)
+    res = Label(window, text='РЕЗУЛЬТАТЫ:', font=("Times", int(yax * 0.036)),
+                bg='#dbdbdb', bd=3, relief='raised')
+    res.place(relx=0.5, rely=0.05, anchor=CENTER)
+
     but_back = Button(window, text="Назад", font=("Times", int(yax * 0.0178)), bg='#D8D8D8',
-                      width=10, height=1, relief='groove', command=back)
+                      width=10, height=1, relief='groove', command=partial(back, page=3))
     but_back.place(relx=0.5, rely=0.93, anchor=CENTER)
+
+    # текущая страница
+    global now_pg
+    now_pg = 3
 
 
 def ac1_print():
@@ -289,27 +401,50 @@ def ac1_print():
 
     frame_d1 = Canvas(width=xax - 10, height=yax * 0.068 * (days // 10 if days % 10 == 0 else (days // 10) + 1),
                       highlightthickness=0, selectborderwidth=3)
-    frame_d1.place(relx=0.5, rely=0.135, anchor='n')
-    rs, cs = 1, 1
+    frame_d1.place(relx=0.5, rely=0.265, anchor='n')
+    rs, cs = 1, 2
     for i in range(days):
         if i in [10, 20, 30]:
             rs += 1
             cs -= 10
-        f = Canvas(frame_d1, width=xax * 0.0846, height=yax * 0.0788,
+
+        # обозначения для полей ввода коробок
+        m = Canvas(frame_d1, width=xax * 0.02, height=yax * 0.16)
+        m.grid(row=rs, column=1, sticky='e', padx=0.5, pady=5)
+
+        p_let = Button(m, text="П", font=("garamond", int(yax * 0.016), 'bold'), fg='#2a7485',
+                       width=1, height=1, relief=GROOVE, justify=CENTER, state=DISABLED, borderwidth=0)
+        p_let.place(relx=0.5, rely=0.4, anchor=CENTER)
+        v_let = Button(m, text="В", font=("garamond", int(yax * 0.016), 'bold'), fg='#2a7485',
+                       width=1, height=1, relief=GROOVE, justify=CENTER, state=DISABLED, borderwidth=0)
+        v_let.place(relx=0.55, rely=0.57, anchor=CENTER)
+        pers_let = Button(m, text="%", font=("garamond", int(yax * 0.016), 'bold'), fg='#2a7485',
+                       width=1, height=1, relief=GROOVE, justify=CENTER, state=DISABLED, borderwidth=0)
+        pers_let.place(relx=0.53, rely=0.82, anchor=CENTER)
+
+        Hovertip(p_let, 'П - плановое количество коробок', hover_delay=100)
+        Hovertip(v_let, 'В - количество выполненных коробок', hover_delay=100)
+        Hovertip(pers_let, '% - соотношение выполненных к плановым', hover_delay=100)
+
+        f = Canvas(frame_d1, width=xax * 0.09, height=yax * 0.16,
                    highlightthickness=0.5, highlightbackground="black", bg='#dedede')
-        f.grid(row=rs, column=cs + i, sticky='e', padx=2, pady=2)
-        f.create_text(xax * 0.0846 * 0.5, yax * 0.0788 * 0.165, text=f'{i + 1}',
+        f.grid(row=rs, column=cs + i, sticky='e', padx=1, pady=5)
+        f.create_text(xax * 0.09 * 0.5, yax * 0.16 * 0.165, text=f'{i + 1}',
                       font=("Times", int(yax * 0.0175), 'italic'))
+        f.create_line(5, yax * 0.16 * 0.72, xax * 0.09 - 5, yax * 0.16 * 0.72, fill='#333', width=1)
         for k in range(3):
             text1 = Text(f, width=3, height=1)
-            text1.place(relx=0.25 * (k + 1), rely=0.46, anchor=CENTER)
+            text1.place(relx=0.25 * (k + 1), rely=0.4, anchor=CENTER)
             text1.configure(font=f'garamond {round(yax * 0.014)}')
             text1.bind('<Key>', partial(check_keys, field=text1))
             text2 = Text(f, width=3, height=1)
-            text2.place(relx=0.25 * (k + 1), rely=0.8, anchor=CENTER)
+            text2.place(relx=0.25 * (k + 1), rely=0.58, anchor=CENTER)
             text2.configure(font=f'garamond {round(yax * 0.014)}')
             text2.bind('<Key>', partial(check_keys, field=text2))
-            d_ac1.append((text1, text2))
+            text3 = Text(f, width=3, height=1, bg='#f2f2f2')
+            text3.place(relx=0.25 * (k + 1), rely=0.84, anchor=CENTER)
+            text3.configure(font=f'garamond {round(yax * 0.015)} bold', state=DISABLED, fg='#1aab6e')
+            d_ac1.append((text1, text2, text3))
 
 
 def ac2_print():
@@ -330,30 +465,53 @@ def ac2_print():
     ogib2.configure(highlightthickness=0)
     frame_d2 = Canvas(width=xax - 10, height=yax * 0.068 * (days // 10 if days % 10 == 0 else (days // 10) + 1),
                       highlightthickness=0)
-    frame_d2.place(relx=0.5, rely=0.525, anchor='n')
-    rs, cs = 1, 1
+    frame_d2.place(relx=0.5, rely=0.265, anchor='n')
+    rs, cs = 1, 2
     for i in range(days):
         if i in [10, 20, 30]:
             rs += 1
             cs -= 10
-        f = Canvas(frame_d2, width=xax * 0.0846, height=yax * 0.0788,
+
+        # обозначения для полей ввода коробок
+        m = Canvas(frame_d2, width=xax * 0.02, height=yax * 0.16)
+        m.grid(row=rs, column=1, sticky='e', padx=0.5, pady=5)
+
+        p_let = Button(m, text="П", font=("garamond", int(yax * 0.016), 'bold'), fg='#2a7485',
+                       width=1, height=1, relief=GROOVE, justify=CENTER, state=DISABLED, borderwidth=0)
+        p_let.place(relx=0.5, rely=0.4, anchor=CENTER)
+        v_let = Button(m, text="В", font=("garamond", int(yax * 0.016), 'bold'), fg='#2a7485',
+                       width=1, height=1, relief=GROOVE, justify=CENTER, state=DISABLED, borderwidth=0)
+        v_let.place(relx=0.55, rely=0.57, anchor=CENTER)
+        pers_let = Button(m, text="%", font=("garamond", int(yax * 0.016), 'bold'), fg='#2a7485',
+                          width=1, height=1, relief=GROOVE, justify=CENTER, state=DISABLED, borderwidth=0)
+        pers_let.place(relx=0.53, rely=0.82, anchor=CENTER)
+
+        Hovertip(p_let, 'П - плановое количество коробок', hover_delay=100)
+        Hovertip(v_let, 'В - количество выполненных коробок', hover_delay=100)
+        Hovertip(pers_let, '% - соотношение выполненных к плановым', hover_delay=100)
+
+        f = Canvas(frame_d2, width=xax * 0.09, height=yax * 0.16,
                    highlightthickness=0.5, highlightbackground="black", bg='#dedede')
-        f.grid(row=rs, column=cs + i, sticky='e', padx=2, pady=2)
-        f.create_text(xax * 0.0846 * 0.5, yax * 0.0788 * 0.165, text=f'{i + 1}',
+        f.grid(row=rs, column=cs + i, sticky='e', padx=1, pady=5)
+        f.create_text(xax * 0.09 * 0.5, yax * 0.16 * 0.165, text=f'{i + 1}',
                       font=("Times", int(yax * 0.0175), 'italic'))
+        f.create_line(5, yax * 0.16 * 0.72, xax * 0.09 - 5, yax * 0.16 * 0.72, fill='#333', width=1)
         for k in range(3):
             text1 = Text(f, width=3, height=1)
-            text1.place(relx=0.25 * (k + 1), rely=0.46, anchor=CENTER)
+            text1.place(relx=0.25 * (k + 1), rely=0.4, anchor=CENTER)
             text1.configure(font=f'garamond {round(yax * 0.014)}')
             text1.bind('<Key>', partial(check_keys, field=text1))
             text2 = Text(f, width=3, height=1)
-            text2.place(relx=0.25 * (k + 1), rely=0.8, anchor=CENTER)
+            text2.place(relx=0.25 * (k + 1), rely=0.58, anchor=CENTER)
             text2.configure(font=f'garamond {round(yax * 0.014)}')
             text2.bind('<Key>', partial(check_keys, field=text2))
-            d_ac2.append((text1, text2))
+            text3 = Text(f, width=3, height=1, bg='#f2f2f2')
+            text3.place(relx=0.25 * (k + 1), rely=0.84, anchor=CENTER)
+            text3.configure(font=f'garamond {round(yax * 0.015)} bold', state=DISABLED, fg='#1aab6e')
+            d_ac2.append((text1, text2, text3))
 
 
-def back():
+def back(page):
     """
     Функция для возвращения к первому окну программы и вставки введенных значений обратно в поля
     """
@@ -361,91 +519,162 @@ def back():
     # очистка экрана и отображение первого окна
     for x in window.winfo_children():
         x.destroy()
-    win_one()
+    if page == 1:
+        win_1st()
+    elif page == 2:
+        win_2nd()
+    elif page == 3:
+        win_3rd()
 
     # обработка значений из "памяти ввода"
-    txts, sts = ('dtext_ac1', 'ntext_ac1', 'dtext_ac2', 'ntext_ac2', 'text_ava'), ('st_day_t', 'st_nig_t')
-    [eval(f'{txts[x]}.insert(0.0, inp_ver[x])') for x in range(len(txts))]
+    global inp_ver
+    if page == 1:
+        global d_ac2
+        d_ac2 = []
+        txts = ('dtext_ac1', 'ntext_ac1')
+        [eval(f'{txts[x]}.insert(0.0, inp_ver[x])') for x in range(len(txts))]
+        if file_name == '':
+            inp_ver = []
 
-    [eval(f'{sts[x]}.configure(state=NORMAL)') for x in range(len(sts))]
-    [eval(f'{sts[x]}.delete(0.0, END)') for x in range(len(sts))]
-    [eval(f'{sts[x]}.insert(0.0, inp_ver[x+5])') for x in range(len(sts))]
-    [eval(f'{sts[x]}.configure(state=DISABLED)') for x in range(len(sts))]
+        # вставка значений в поля на свои места
+        if ac1_list != [[[]]]:
+            ac1_print()
+            temp1 = [[k for k in x] for i in ac1_list for x in i]
+            [[(x[0].insert(0.0, temp1[d_ac1.index(x)][0]), x[1].insert(0.0, temp1[d_ac1.index(x)][1]))
+              for x in d_ac1[i:i + 3]] for i in range(0, len(d_ac1), 3)]
+    if page == 2:
+        txts = ('dtext_ac2', 'ntext_ac2')
+        [eval(f'{txts[x]}.insert(0.0, inp_ver[x+2])') for x in range(len(txts))]
+        if file_name == '':
+            inp_ver = inp_ver[:2]
 
-    # вставка значений в поля на свои места
-    if ac1_list != [[[]]]:
-        ac1_print()
-        temp1 = [[k for k in x] for i in ac1_list for x in i]
-        [[(x[0].insert(0.0, temp1[d_ac1.index(x)][0]), x[1].insert(0.0, temp1[d_ac1.index(x)][1]))
-          for x in d_ac1[i:i + 3]] for i in range(0, len(d_ac1), 3)]
-    if ac2_list != [[[]]]:
-        ac2_print()
-        temp2 = [[k for k in x] for i in ac2_list for x in i]
-        [[(x[0].insert(0.0, temp2[d_ac2.index(x)][0]), x[1].insert(0.0, temp2[d_ac2.index(x)][1]))
-          for x in d_ac2[i:i + 3]] for i in range(0, len(d_ac2), 3)]
+        # вставка значений в поля на свои места
+        if ac2_list != [[[]]]:
+            ac2_print()
+            temp2 = [[k for k in x] for i in ac2_list for x in i]
+            [[(x[0].insert(0.0, temp2[d_ac2.index(x)][0]), x[1].insert(0.0, temp2[d_ac2.index(x)][1]))
+              for x in d_ac2[i:i + 3]] for i in range(0, len(d_ac2), 3)]
+    if page == 3:
+        sts = ('st_day_t', 'st_nig_t')
+        eval('text_ava.insert(0.0, inp_ver[4])')
+        [eval(f'{sts[x]}.configure(state=NORMAL)') for x in range(len(sts))]
+        [eval(f'{sts[x]}.delete(0.0, END)') for x in range(len(sts))]
+        [eval(f'{sts[x]}.insert(0.0, inp_ver[x+5])') for x in range(len(sts))]
+        [eval(f'{sts[x]}.configure(state=DISABLED)') for x in range(len(sts))]
+        if file_name == '':
+            inp_ver = inp_ver[:4]
 
 
 # ФУНКЦИИ ВЫЧИСЛЕНИЙ И ОБРАБОТКИ РЕЗУЛЬТАТОВ ПРОГРАММЫ
-def data_package():
+def data_package(page):
     """
     Функция для "запаковывания" введенных данных для удобства работы
     """
 
     global ac1_list, ac2_list, inp_ver
-    if push_check(d_ac1, ogib1):
-        ac1_list = [[(x[0].get(0.0, END).strip(), x[1].get(0.0, END).strip()) for x in d_ac1[i:i + 3]]
-                    for i in range(0, len(d_ac1), 3)]
-    else:
-        ac1_list = [[[]]]
-    if push_check(d_ac2, ogib2):
-        ac2_list = [[(x[0].get(0.0, END).strip(), x[1].get(0.0, END).strip()) for x in d_ac2[i:i + 3]]
-                    for i in range(0, len(d_ac2), 3)]
-    else:
-        ac2_list = [[[]]]
-    elements = (dtext_ac1, ntext_ac1, dtext_ac2, ntext_ac2, text_ava, st_day_t, st_nig_t)
-    inp_ver = [incorrect_input(x, 'fl') if x in (st_day_t, st_nig_t) else incorrect_input(x) for x in elements]
+    if page == 1:
+        if push_check(d_ac1, ogib1):
+            ac1_list = [[(x[0].get(0.0, END).strip(), x[1].get(0.0, END).strip()) for x in d_ac1[i:i + 3]]
+                        for i in range(0, len(d_ac1), 3)]
+            elements = (dtext_ac1, ntext_ac1)
+            res = [incorrect_input(x) for x in elements]
+            print(inp_ver)
+            if len(inp_ver) < 2 or None in inp_ver:
+                inp_ver = res
+            if res != inp_ver[:2]:
+                inp_ver[:2] = res
+        else:
+            ac1_list = [[[]]]
+    elif page == 2:
+        if push_check(d_ac2, ogib2):
+            ac2_list = [[(x[0].get(0.0, END).strip(), x[1].get(0.0, END).strip()) for x in d_ac2[i:i + 3]]
+                        for i in range(0, len(d_ac2), 3)]
+            elements = (dtext_ac2, ntext_ac2)
+            res = [incorrect_input(x) for x in elements]
+            if len(inp_ver) < 4 or None in inp_ver:
+                inp_ver = af_1 + res
+            if res != inp_ver[2:4]:
+                inp_ver[2:4] = res
+        else:
+            ac2_list = [[[]]]
+    elif page == 3:
+        elements = (text_ava, st_day_t, st_nig_t)
+        res = [incorrect_input(x, 'fl') if x in (st_day_t, st_nig_t) else incorrect_input(x) for x in elements]
+        if len(inp_ver) < 7 or None in inp_ver:
+            inp_ver = af_2 + res
+        if res != inp_ver[4:]:
+            inp_ver[4:] = res
 
 
-def evaluate():
+def evaluate(page):
     """
     Функция для управления вычислениями и их отображением
     """
 
-    global inp_ver, ac1_list, ac2_list
-
     # запаковка данных и их проверка
-    data_package()
-    check = (proof_days(ac1_list, frame_d1), proof_days(ac2_list, frame_d2))
-    print(f'Результаты: {inp_ver}')
-    if None in inp_ver or 0 in check:
-        return
+    data_package(page)
+    if page == 1:
+        check1 = proof_days(ac1_list, frame_d1)
+        el_check1 = [incorrect_input(x) for x in [dtext_ac1, ntext_ac1]]
+        if check1 == 0 or None in el_check1:
+            return
+        for x in window.winfo_children():
+            x.destroy()
+        global d_ac1
+        d_ac1 = []
+        print(f'Результаты: {inp_ver}')
+        global af_1
+        af_1 = inp_ver
+        try:
+            back(2)
+        except:
+            win_2nd()
+    elif page == 2:
+        check2 = proof_days(ac2_list, frame_d2)
+        el_check2 = [incorrect_input(x) for x in [dtext_ac2, ntext_ac2]]
+        if check2 == 0 or None in el_check2:
+            return
+        for x in window.winfo_children():
+            x.destroy()
+        global d_ac2
+        d_ac2 = []
+        print(f'Результаты: {inp_ver}')
+        global af_2
+        af_2 = inp_ver
+        try:
+            back(3)
+        except:
+            win_3rd()
+    elif page == 3:
+        if None in inp_ver:
+            return
 
-    # сохранение коэффициентов в yaml-файл
-    if stav_d.get():
-        coef1 = incorrect_input(st_day_t, 'fl')
-        to_yaml1 = {'rates': {'day_hour': coef1, 'night_hour': stn}}
+        # сохранение коэффициентов в yaml-файл
+        if stav_d.get():
+            coef1 = incorrect_input(st_day_t, 'fl')
+            to_yaml1 = {'rates': {'day_hour': coef1, 'night_hour': stn}}
 
-        with open('coefs.yaml', 'w') as t:
-            dump(to_yaml1, t, default_flow_style=False)
-    elif stav_n.get():
-        coef2 = incorrect_input(st_nig_t, 'fl')
-        to_yaml2 = {'rates': {'day_hour': std, 'night_hour': coef2}}
+            with open('coefs.yaml', 'w') as t:
+                dump(to_yaml1, t, default_flow_style=False)
+        elif stav_n.get():
+            coef2 = incorrect_input(st_nig_t, 'fl')
+            to_yaml2 = {'rates': {'day_hour': std, 'night_hour': coef2}}
 
-        with open('coefs.yaml', 'w') as t:
-            dump(to_yaml2, t, default_flow_style=False)
-    elif stav_d.get() and stav_n.get():
-        coef1 = incorrect_input(st_day_t, 'fl')
-        coef2 = incorrect_input(st_nig_t, 'fl')
-        to_yaml3 = {'rates': {'day_hour': coef1, 'night_hour': coef2}}
+            with open('coefs.yaml', 'w') as t:
+                dump(to_yaml2, t, default_flow_style=False)
+        elif stav_d.get() and stav_n.get():
+            coef1 = incorrect_input(st_day_t, 'fl')
+            coef2 = incorrect_input(st_nig_t, 'fl')
+            to_yaml3 = {'rates': {'day_hour': coef1, 'night_hour': coef2}}
 
-        with open('coefs.yaml', 'w') as t:
-            dump(to_yaml3, t, default_flow_style=False)
+            with open('coefs.yaml', 'w') as t:
+                dump(to_yaml3, t, default_flow_style=False)
 
-    # очистка и переход к вычислениям и отображению их результатов
-    for x in window.winfo_children():
-        x.destroy()
-    calculation(ac1_list, ac2_list, inp_ver)
-    win_sec()
+        # очистка и переход к вычислениям и отображению их результатов
+        for x in window.winfo_children():
+            x.destroy()
+        calculation(ac1_list, ac2_list, inp_ver)
+        win_4th()
 
 
 def calculation(days_ac1, days_ac2, fields):
@@ -471,8 +700,8 @@ def calculation(days_ac1, days_ac2, fields):
     # результаты для AC1
     canx, cany = (xax * 0.5) - 30, yax * 0.5
     res_ac1 = Canvas(width=canx, height=cany, bg='#e0e0e0', highlightthickness=1, highlightbackground="black")
-    res_ac1.place(relx=0.255, rely=0.33, anchor=CENTER)
-    res_ac1.create_text(canx * 0.5, cany * 0.05, text='AC1', font=("Times", int(yax * 0.0255)), fill='#870909')
+    res_ac1.place(relx=0.255, rely=0.35, anchor=CENTER)
+    res_ac1.create_text(canx * 0.5, cany * 0.065, text='AC1', font=("Times", int(yax * 0.0265), 'bold'), fill='#2a7485')
     ocl1 = fields[-2] * hours * fields[0]
     res_ac1.create_text(canx * 0.5, cany * 0.2, text=f'Оклад:  {round(ocl1, 2)}  руб.',
                         font=("Times", int(yax * 0.0225)))
@@ -510,8 +739,8 @@ def calculation(days_ac1, days_ac2, fields):
     # результаты для AC2
     res_ac2 = Canvas(width=(xax // 2) - 30, height=yax // 2, bg='#e0e0e0', highlightthickness=1,
                      highlightbackground="black")
-    res_ac2.place(relx=0.745, rely=0.33, anchor=CENTER)
-    res_ac2.create_text(canx * 0.5, cany * 0.05, text='AC2', font=("Times", int(yax * 0.0255)), fill='#870909')
+    res_ac2.place(relx=0.745, rely=0.35, anchor=CENTER)
+    res_ac2.create_text(canx * 0.5, cany * 0.065, text='AC2', font=("Times", int(yax * 0.0265), 'bold'), fill='#2a7485')
     ocl2 = fields[-2] * hours * fields[2] / 2
     res_ac2.create_text(canx * 0.5, cany * 0.2, text=f'Оклад:  {round(ocl2, 2)}  руб.',
                         font=("Times", int(yax * 0.0225)))
@@ -548,17 +777,17 @@ def calculation(days_ac1, days_ac2, fields):
 
     # линии для разделения
     line_ver = Canvas(width=xax // 100, height=yax // 2)
-    line_ver.place(relx=0.5, rely=0.33, anchor=CENTER)
-    line_ver.create_line(xax // 150, 0, xax // 150, yax // 2, fill='#a34e4e', width=3)
+    line_ver.place(relx=0.5, rely=0.35, anchor=CENTER)
+    line_ver.create_line(xax // 150, 0, xax // 150, yax // 2 + 40, fill='#1aab6e', width=3)
     line_hor = Canvas(width=xax - 45, height=yax // 170)
-    line_hor.place(relx=0.5, rely=0.59, anchor=CENTER)
-    line_hor.create_line(0, yax // 255, xax, yax // 255, fill='#a34e4e', width=3)
+    line_hor.place(relx=0.5, rely=0.62, anchor=CENTER)
+    line_hor.create_line(0, yax // 255, xax, yax // 255, fill='#1aab6e', width=3)
 
     # итоговые результаты
     global totx, toty, res_tot
-    totx, toty = xax // 1.5, yax // 3.5
-    res_tot = Canvas(width=totx, height=toty, bg='#e0e0e0', highlightthickness=1, highlightbackground="black")
-    res_tot.place(relx=0.5, rely=0.74, anchor=CENTER)
+    totx, toty = xax // 1.6, yax // 4
+    res_tot = Canvas(width=totx, height=toty, bg='#e0e0e0', highlightthickness=3, highlightbackground="#2a7485")
+    res_tot.place(relx=0.5, rely=0.76, anchor=CENTER)
 
     prem_pers([per_text1_1, per_text1_2, per_text1_3])
     prem_pers([per_text2_1, per_text2_2, per_text2_3])
@@ -579,7 +808,6 @@ def prem_pers(tf):
         prem_n1 = [(i / 100) * ocl1 for i in pers]
         for i in range(3):
             ln = len(str(round(prem_n1[i], 2)).strip())
-            print(ln)
             if alt1[i] != 0:
                 parent.delete(alt1[i])
                 alt1[i] = parent.create_text(canx * 0.63 + canx * 0.01 * (ln-3), cany * rely,
@@ -618,7 +846,7 @@ def prem_pers(tf):
     res_tot.create_text(totx * 0.5, toty * 0.59, text=f'Аванс:  {inp_ver[4]}  руб.',
                         font=("Times", int(yax * 0.0225)))
     res_tot.create_text(totx * 0.5, toty * 0.81, text=f'Сумма на руки:  {round(sum_res_per - inp_ver[4], 2)}  руб.',
-                        font=("Times", int(yax * 0.0225)))
+                        font=("Times", int(yax * 0.024), 'bold'))
 
 
 # ФУНКЦИИ ПРОВЕРКИ И ВЫДЕЛЕНИЯ ОШИБОК ПРОГРАММЫ
@@ -701,7 +929,9 @@ def ch_but(but):
 
 
 # Начало работы программы - запуск первой основной функции
-win_one()
+win_1st()
+# win_2nd()
+# win_3rd()
 
 # Удержание окна программы открытым
 window.mainloop()
