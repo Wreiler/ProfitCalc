@@ -44,7 +44,7 @@ def about():
     Функция для вывода справки из меню программы
     """
 
-    showinfo("Справка", "Программа для расчета оклада труда.\nВерсия 2.0\n\nby Wreiler")
+    showinfo("Справка", "Программа для расчета оклада труда.\nВерсия 2.1.0\n\nby Wreiler")
 
 
 def open_file():
@@ -841,7 +841,7 @@ def prem_pers(tf):
     res_tot.create_text(totx * 0.5, toty * 0.15, text=f'Сумма:  {round(sum_res, 2)}  руб.',
                         font=("Times", int(yax * 0.0225)))
     sum_res_per = sum_res - (sum_res * 0.13)
-    res_tot.create_text(totx * 0.5, toty * 0.37, text=f'Сумма с процентами:  {round(sum_res_per, 2)}  руб.',
+    res_tot.create_text(totx * 0.5, toty * 0.37, text=f'Сумма (-13%):  {round(sum_res_per, 2)}  руб.',
                         font=("Times", int(yax * 0.0225)))
     res_tot.create_text(totx * 0.5, toty * 0.59, text=f'Аванс:  {inp_ver[4]}  руб.',
                         font=("Times", int(yax * 0.0225)))
@@ -875,7 +875,7 @@ def check_keys(event, field):
     """
 
     s = field.get(0.0, END).strip()
-    lim = ((field.winfo_reqwidth() + 3) // 10)
+    lim = ((field.winfo_reqwidth() + 8) // 10)
     if (len(s) == lim or (event.state & 4 and event.keysym == "v")) and event.keysym != 'BackSpace':
         return 'break'
     elif event.char == ' ' or event.keysym == 'Return' or event.keysym == 'Tab' or event.char.isalpha():
