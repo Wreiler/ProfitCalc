@@ -682,7 +682,7 @@ def calculation(days_ac1, days_ac2, fields):
     Функция для вычислений и расчетов требуемых значений
     """
 
-    global res_ac1, res_ac2, canx, cany, ocl1, ocl2, premia1, premia2, premia201, premia202
+    global res_ac1, res_ac2, canx, cany, ocl1, ocl2, premia1, premia2, premia201, premia202, vys1
     print(days_ac1, days_ac2, sep='\n')
     print(fields)
 
@@ -703,24 +703,27 @@ def calculation(days_ac1, days_ac2, fields):
     res_ac1.place(relx=0.255, rely=0.35, anchor=CENTER)
     res_ac1.create_text(canx * 0.5, cany * 0.065, text='AC1', font=("Times", int(yax * 0.0265), 'bold'), fill='#2a7485')
     ocl1 = fields[-2] * hours * fields[0]
+    vys1 = ocl1 * 0.2
     res_ac1.create_text(canx * 0.5, cany * 0.2, text=f'Оклад:  {round(ocl1, 2)}  руб.',
                         font=("Times", int(yax * 0.0225)))
+    res_ac1.create_text(canx * 0.5, cany * 0.3, text=f'Выслуга:  {round(vys1, 2)}  руб.',
+                        font=("Times", int(yax * 0.0225)))
     premia1 = sum([(fields[-2] * hours * x) // 100 for x in pers_dac1])
-    res_ac1.create_text(canx * 0.5, cany * 0.32,
+    res_ac1.create_text(canx * 0.5, cany * 0.4,
                         text=f'Премия:  {round(premia1, 2)}  руб.',
                         font=("Times", int(yax * 0.0225)))
-    res_ac1.create_text(canx * 0.39, cany * 0.44, text=f'Премия          %:', font=("Times", int(yax * 0.0225)))
-    res_ac1.create_text(canx * 0.39, cany * 0.59, text=f'Премия          %:', font=("Times", int(yax * 0.0225)))
+    res_ac1.create_text(canx * 0.39, cany * 0.5, text=f'Премия          %:', font=("Times", int(yax * 0.0225)))
+    res_ac1.create_text(canx * 0.39, cany * 0.62, text=f'Премия          %:', font=("Times", int(yax * 0.0225)))
     res_ac1.create_text(canx * 0.39, cany * 0.74, text=f'Премия          %:', font=("Times", int(yax * 0.0225)))
 
     per_text1_1 = Text(res_ac1, width=3, height=1)
-    per_text1_1.place(relx=0.449, rely=0.44, anchor=CENTER)
+    per_text1_1.place(relx=0.449, rely=0.5, anchor=CENTER)
     per_text1_1.configure(font=("Times", int(yax * 0.0225)))
     per_text1_1.bind('<Key>', partial(check_keys, field=per_text1_1))
     per_text1_1.insert(0.0, 10)
 
     per_text1_2 = Text(res_ac1, width=3, height=1)
-    per_text1_2.place(relx=0.449, rely=0.59, anchor=CENTER)
+    per_text1_2.place(relx=0.449, rely=0.62, anchor=CENTER)
     per_text1_2.configure(font=("Times", int(yax * 0.0225)))
     per_text1_2.bind('<Key>', partial(check_keys, field=per_text1_2))
     per_text1_2.insert(0.0, 10)
@@ -798,13 +801,14 @@ def prem_pers(tf):
     Функция для расчета n-% премии и перерасчета итоговых результатов
     """
 
-    global ocl1, ocl2, alt1, alt2, prem_n1, prem_n2, res_tot
+    global ocl1, ocl2, alt1, alt2, prem_n1, prem_n2, res_tot, vys1
     pers = [int(x.get(0.0, END).strip()) for x in tf]
     parent = tf[0].master
     rely = 0.44
 
     # расчет n-% премии для AC1
     if parent == res_ac1:
+        rely = 0.5
         prem_n1 = [(i / 100) * ocl1 for i in pers]
         for i in range(3):
             ln = len(str(round(prem_n1[i], 2)).strip())
@@ -817,7 +821,7 @@ def prem_pers(tf):
                 alt1[i] = parent.create_text(canx * 0.63 + canx * 0.01 * (ln-3), cany * rely,
                                              text=f'  {round(prem_n1[i], 2)}  руб.',
                                              font=("Times", int(yax * 0.0225)))
-            rely += 0.15
+            rely += 0.12
     # расчет n-% премии для AC2
     else:
         prem_n2 = [(i / 100) * ocl2 for i in pers]
@@ -837,7 +841,7 @@ def prem_pers(tf):
     # перерасчет итоговых значений
     res_tot.delete('all')
     sum_res = ocl1 + ocl2 + premia1 + premia2 + sum(prem_n1) + sum(prem_n2) + \
-              (inp_ver[1] * inp_ver[-1]) + (inp_ver[3] * inp_ver[-1])
+              (inp_ver[1] * inp_ver[-1]) + (inp_ver[3] * inp_ver[-1]) + vys1
     res_tot.create_text(totx * 0.5, toty * 0.15, text=f'Сумма:  {round(sum_res, 2)}  руб.',
                         font=("Times", int(yax * 0.0225)))
     sum_res_per = sum_res - (sum_res * 0.13)
