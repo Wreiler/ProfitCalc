@@ -1,13 +1,16 @@
+import cv2
 import ctypes
+import datetime
+from functools import partial
+from idlelib.tooltip import Hovertip
+import json
+from PIL import ImageGrab, ImageTk
 from tkinter import *
-from tkinter.ttk import Checkbutton
 from tkinter.filedialog import *
 from tkinter.messagebox import *
-from functools import partial
-import json
-import datetime
+from tkinter.ttk import Checkbutton
+import win32gui
 from yaml import safe_load, dump
-from idlelib.tooltip import Hovertip
 
 
 # Для вывода иконки в панель задач
@@ -56,28 +59,37 @@ def open_file():
     file = askopenfile()
     if file:
         file_name = file.name
-        with open(file.name, 'r') as filej:
-            ac1_list, ac2_list, inp_ver = json.load(filej)
-        back(1)
+        try:
+            with open(file.name, 'r') as filej:
+                ac1_list, ac2_list, inp_ver = json.load(filej)
+            back(1)
+        except json.decoder.JSONDecodeError:
+            new_file('empty')
 
 
-def save_as_file():
+def save_as_file(key='cl'):
     """
     Функция для сохранения файла в новый из меню программы
     """
 
     global file_name
     now = datetime.datetime.now()
-    file = asksaveasfile(defaultextension=".json", initialfile=f'Расчет от {now.strftime("%d-%m-%Y")}')
+    save_txt = f'Расчет от {now.strftime("%d-%m-%Y %H.%M")} (входные данные)' if key == 'res' \
+        else f'Расчет от {now.strftime("%d-%m-%Y %H.%M")}'
+    file = asksaveasfile(defaultextension=".json", initialfile=f'{save_txt}')
     if file:
         file_name = file.name
         with open(file.name, 'w') as filej:
             data_package(now_pg)
             if now_pg == 1:
                 pack = [ac1_list, [[[]]], inp_ver]
-            elif now_pg in (2, 3):
+            else:
                 pack = [ac1_list, ac2_list, inp_ver]
             json.dump(pack, filej)
+        pic_name = f'Расчет от {now.strftime("%d-%m-%Y %H.%M")} (результаты).jpg'
+        if key == 'res':
+            picname = asksaveasfile(mode='w', defaultextension=".jpg", initialfile=f'{pic_name}')
+            capture().save(picname)
 
 
 def save_file():
@@ -92,7 +104,7 @@ def save_file():
             data_package(now_pg)
             if now_pg == 1:
                 pack = [ac1_list, [[[]]], inp_ver]
-            elif now_pg in (2, 3):
+            else:
                 pack = [ac1_list, ac2_list, inp_ver]
             json.dump(pack, filej)
 
@@ -120,16 +132,26 @@ def _exit():
     window.destroy()
 
 
-def new_file():
+def new_file(key='cl'):
     """
     Функция для создания нового фала из меню программы (очистка полей)
     """
 
     global file_name
-    if askyesno("Новый файл", "Хотите сохранить файл перед созданием нового?"):
-        save_as_file()
+    if key != 'empty':
+        if askyesno("Новый файл", "Хотите сохранить файл перед созданием нового?"):
+            if key == 'res':
+                save_as_file('res')
+            else:
+                save_as_file()
     for x in window.winfo_children():
         x.destroy()
+    global std, stn, alt1, alt2, prem_n1, prem_n2, inp_ver, now_pg
+    std, stn = temp['rates']['day_hour'], temp['rates']['night_hour']
+    alt1, alt2 = [0, 0, 0], [0, 0, 0]
+    prem_n1, prem_n2 = [], []
+    inp_ver = []
+    now_pg = 0
     win_1st()
     file_name = ''
 
@@ -150,8 +172,8 @@ def make_menu(n):
         fm.add_command(label="Сохранить", command=save_file)
         fm.add_command(label="Сохранить как...", command=save_as_file)
     else:
-        fm.add_command(label="Сохранить результаты", command=save_file)
-        fm.add_command(label="Сохранить результаты как...", command=save_as_file)
+        fm.add_command(label="Новый расчет", command=partial(new_file, key='res'))
+        fm.add_command(label="Сохранить результаты", command=partial(save_as_file, key='res'))
     fm.add_separator()
     fm.add_command(label="Выход", command=_exit)
 
@@ -186,6 +208,23 @@ def update():
                 i[2].insert(0.0, 0)
             i[2].config(state=DISABLED)
     window.after(800, update)
+
+
+def capture():
+    global screen, screen_sh
+    hwnd = win32gui.FindWindow(None, 'ProfitCalc')
+    rect = win32gui.GetWindowRect(hwnd)
+    x = rect[0]
+    y = rect[1]
+    wg = rect[2] - x
+    hg = rect[3] - y
+    screen = ImageGrab.grab(bbox=(x+10, y+50, x+wg-10, y+hg-10))
+
+    screen_sh = ImageTk.PhotoImage(screen)
+    img = ImageTk.getimage(screen_sh)
+    img = img.convert('RGB')
+    img.show()
+    return img
 
 
 # ФУНКЦИИ ОТОБРАЖЕНИЯ ОСНОВНЫХ ОКОН И ПОЛЕЙ ПРОГРАММЫ
@@ -379,7 +418,7 @@ def win_4th():
 
     # текущая страница
     global now_pg
-    now_pg = 3
+    now_pg = 4
 
 
 def ac1_print():
