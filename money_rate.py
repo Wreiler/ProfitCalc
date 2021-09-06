@@ -1,4 +1,3 @@
-import cv2
 import ctypes
 import datetime
 from functools import partial
@@ -146,7 +145,9 @@ def new_file(key='cl'):
                 save_as_file()
     for x in window.winfo_children():
         x.destroy()
-    global std, stn, alt1, alt2, prem_n1, prem_n2, inp_ver, now_pg
+    global frame_d1, frame_d2, d_ac1, d_ac2, std, stn, alt1, alt2, prem_n1, prem_n2, inp_ver, now_pg
+    frame_d1, frame_d2 = 0, 0
+    d_ac1, d_ac2 = [], []
     std, stn = temp['rates']['day_hour'], temp['rates']['night_hour']
     alt1, alt2 = [0, 0, 0], [0, 0, 0]
     prem_n1, prem_n2 = [], []
@@ -573,7 +574,8 @@ def back(page):
         txts = ('dtext_ac1', 'ntext_ac1')
         [eval(f'{txts[x]}.insert(0.0, inp_ver[x])') for x in range(len(txts))]
         if file_name == '':
-            inp_ver = []
+            # inp_ver = []
+            pass
 
         # вставка значений в поля на свои места
         if ac1_list != [[[]]]:
@@ -585,7 +587,8 @@ def back(page):
         txts = ('dtext_ac2', 'ntext_ac2')
         [eval(f'{txts[x]}.insert(0.0, inp_ver[x+2])') for x in range(len(txts))]
         if file_name == '':
-            inp_ver = inp_ver[:2]
+            # inp_ver = inp_ver[:2]
+            pass
 
         # вставка значений в поля на свои места
         if ac2_list != [[[]]]:
@@ -601,7 +604,9 @@ def back(page):
         [eval(f'{sts[x]}.insert(0.0, inp_ver[x+5])') for x in range(len(sts))]
         [eval(f'{sts[x]}.configure(state=DISABLED)') for x in range(len(sts))]
         if file_name == '':
-            inp_ver = inp_ver[:4]
+            # inp_ver = inp_ver[:4]
+            pass
+    print(f'inp_ver - {inp_ver}')
 
 
 # ФУНКЦИИ ВЫЧИСЛЕНИЙ И ОБРАБОТКИ РЕЗУЛЬТАТОВ ПРОГРАММЫ
