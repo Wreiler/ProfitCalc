@@ -21,7 +21,10 @@ window = Tk()
 window.title("ProfitCalc")  # Название окна
 window.iconphoto(False, PhotoImage(file='img2.png'))  # Иконка на рамке окна
 w, h = window.winfo_screenwidth(), window.winfo_screenheight()
-xax, yax = (int(w*0.7), int(h*0.8)) if w <= 1366 and h <= 768 else (int(w*0.5), int(h*0.6))
+if w <= 1366 and h <= 768:
+    xax, yax = (int(w*0.7), int(h*0.8))
+else:
+    (int(w*0.5), int(h*0.6))
 window.geometry(f'{xax}x{yax}')
 window.resizable(0, 0)
 
