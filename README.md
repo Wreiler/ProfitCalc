@@ -45,6 +45,14 @@ _________________________________
 
 #### Example of work:
 
-1) Manual data entry
-2) Opening the finished calculation
-3) Saved calculation results as a screenshot
+  ##### 1) Manual data entry
+
+![image](https://github.com/Wreiler/ProfitCalc/blob/master/PC_work1.gif)
+
+  ##### 2) Opening the finished calculation
+
+![image](https://github.com/Wreiler/ProfitCalc/blob/master/PC_work2.gif)
+
+  ##### 3) Saved calculation results as a screenshot
+
+![image](https://github.com/Wreiler/ProfitCalc/blob/master/results2.jpg)
